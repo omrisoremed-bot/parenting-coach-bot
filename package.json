@@ -1,0 +1,27 @@
+{
+  "name": "parenting-coach-whatsapp",
+  "version": "1.0.0",
+  "description": "AI Parenting Coach on WhatsApp — daily automated guidance powered by NVIDIA NIM (Mistral Large)",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "nodemon bot.js",
+    "test": "node --test tests/"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0",
+    "node-cron": "^3.0.3",
+    "openai": "^4.104.0",
+    "twilio": "^5.3.0",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "localtunnel": "^2.0.2",
+    "nodemon": "^3.1.0"
+  }
+}
