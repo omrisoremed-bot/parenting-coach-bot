@@ -3,13 +3,14 @@
 const cron = require('node-cron');
 const { getAllActiveUsers } = require('../handlers/profileLoader');
 const { sendMessage, sleep } = require('../services/whatsappService');
-const { callAI, buildEveningPrompt } = require('../services/aiService');
+const { callAI, buildEveningPrompt, loadKnowledgeBase } = require('../services/aiService');
 const { setState } = require('../services/sessionManager');
 const logger = require('../services/logger');
 const fs = require('fs');
 const path = require('path');
 
 const soul = fs.readFileSync(path.join(__dirname, '..', 'agents', 'SOUL.md'), 'utf8');
+const systemPrompt = soul + loadKnowledgeBase();
 
 async function sendEveningCheckins() {
   logger.info('Evening check-in cron started');
@@ -22,7 +23,7 @@ async function sendEveningCheckins() {
   for (const user of users) {
     try {
       const prompt = buildEveningPrompt(user);
-      const message = await callAI(soul, prompt);
+      const message = await callAI(systemPrompt, prompt);
       await sendMessage(user.phone, message);
 
       // Set session state so the next message is treated as a check-in response

@@ -3,12 +3,13 @@
 const cron = require('node-cron');
 const { getAllActiveUsers, updateProfile } = require('../handlers/profileLoader');
 const { sendMessage, sleep } = require('../services/whatsappService');
-const { callAI, buildWeeklyPrompt } = require('../services/aiService');
+const { callAI, buildWeeklyPrompt, loadKnowledgeBase } = require('../services/aiService');
 const logger = require('../services/logger');
 const fs = require('fs');
 const path = require('path');
 
 const soul = fs.readFileSync(path.join(__dirname, '..', 'agents', 'SOUL.md'), 'utf8');
+const systemPrompt = soul + loadKnowledgeBase();
 
 async function sendWeeklyReviews() {
   logger.info('Weekly review cron started');
@@ -21,7 +22,7 @@ async function sendWeeklyReviews() {
   for (const user of users) {
     try {
       const prompt = buildWeeklyPrompt(user);
-      const message = await callAI(soul, prompt);
+      const message = await callAI(systemPrompt, prompt);
       await sendMessage(user.phone, message);
 
       // Log the weekly review date

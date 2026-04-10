@@ -3,12 +3,13 @@
 const cron = require('node-cron');
 const { getAllActiveUsers } = require('../handlers/profileLoader');
 const { sendMessage, sendTemplate, sleep } = require('../services/whatsappService');
-const { callAI, buildMorningPrompt } = require('../services/aiService');
+const { callAI, buildMorningPrompt, loadKnowledgeBase } = require('../services/aiService');
 const logger = require('../services/logger');
 const fs = require('fs');
 const path = require('path');
 
 const soul = fs.readFileSync(path.join(__dirname, '..', 'agents', 'SOUL.md'), 'utf8');
+const systemPrompt = soul + loadKnowledgeBase();
 
 async function sendMorningPlans() {
   logger.info('Morning plan cron started');
@@ -21,7 +22,7 @@ async function sendMorningPlans() {
   for (const user of users) {
     try {
       const prompt = buildMorningPrompt(user);
-      const message = await callAI(soul, prompt);
+      const message = await callAI(systemPrompt, prompt);
       await sendMessage(user.phone, message);
       successCount++;
     } catch (err) {

@@ -1,5 +1,25 @@
 'use strict';
 
+const fs   = require('fs');
+const path = require('path');
+
+/**
+ * Load all .md files from the knowledge/ directory.
+ * Returns a combined string injected into the system prompt.
+ */
+function loadKnowledgeBase() {
+  const knowledgeDir = path.join(__dirname, '..', 'knowledge');
+  if (!fs.existsSync(knowledgeDir)) return '';
+  const files = fs.readdirSync(knowledgeDir)
+    .filter(f => f.endsWith('.md') && f !== 'LIRE_MOI.md');
+  if (!files.length) return '';
+  const contents = files.map(f => {
+    const content = fs.readFileSync(path.join(knowledgeDir, f), 'utf8');
+    return `### ${f.replace('.md', '')}\n${content}`;
+  }).join('\n\n---\n\n');
+  return `\n\n## BASE DE CONNAISSANCES SPÉCIALISÉE\n${contents}`;
+}
+
 /**
  * AI Service — powered by NVIDIA NIM (free tier)
  * API: https://integrate.api.nvidia.com/v1  (OpenAI-compatible)
@@ -14,9 +34,9 @@
 const OpenAI = require('openai');
 const logger = require('./logger');
 
-// NVIDIA NIM defaults
+// NVIDIA NIM defaults — mistral-large = meilleur modèle gratuit pour le français + raisonnement
 const DEFAULT_BASE_URL = 'https://integrate.api.nvidia.com/v1';
-const DEFAULT_MODEL    = 'meta/llama-3.1-8b-instruct';
+const DEFAULT_MODEL    = 'mistralai/mistral-large-2-instruct';
 
 const MAX_TOKENS  = 1024;
 const MAX_HISTORY = 10; // keep last N turns to avoid token bloat
@@ -88,14 +108,15 @@ async function callAI(systemPrompt, userMessage, history = []) {
  * Morning plan (08:00 cron).
  */
 function buildMorningPrompt(user) {
+  const religion = user.cultural_context || '';
+  const religionLine = religion ? `\nContexte culturel/religieux : "${religion}" → respecte ces valeurs.` : '';
   return `
-Lis ce profil utilisateur : ${JSON.stringify(user, null, 2)}
+PROFIL : ${JSON.stringify({ parent: user.parent, children: user.children, challenges: user.challenges, family_structure: user.family_structure, child_personality: user.child_personality, child_special_needs: user.child_special_needs }, null, 2)}${religionLine}
 
-Génère le plan parental du matin selon le format exact décrit dans SOUL.md.
+Génère le plan parental du matin selon le format exact de SOUL.md.
 Adapte l'activité et l'astuce à l'âge exact de l'enfant et aux défis déclarés.
 Max 160 mots. Langue : ${user.language || 'fr'}.
-Utilise uniquement le gras WhatsApp (*texte*) pour les titres.
-N'utilise pas de ## ou # (markdown non rendu sur WhatsApp).
+Utilise *texte* pour le gras WhatsApp. Pas de ## ou #.
   `.trim();
 }
 
@@ -129,22 +150,35 @@ Max 200 mots. Langue : ${user.language || 'fr'}.
  * Free-form parent conversation.
  */
 function buildConversationPrompt(user, parentMessage) {
+  const religion = user.cultural_context || user.culturalContext || '';
+  const religionLine = religion
+    ? `\nCONTEXTE RELIGIEUX/CULTUREL : "${religion}" → Respecte ABSOLUMENT ces valeurs dans chaque conseil.`
+    : '';
+
   return `
-Lis ce profil utilisateur : ${JSON.stringify(user, null, 2)}
+PROFIL PARENT :
+- Prénom : ${user.parent?.name || 'inconnu'}
+- Enfant : ${(user.children || []).map(c => `${c.name || '?'}, ${c.age || '?'}`).join(', ') || 'non renseigné'}
+- Défis : ${(user.challenges || []).join(', ') || 'non renseignés'}
+- Structure familiale : ${user.family_structure || 'non renseignée'}
+- Personnalité enfant : ${user.child_personality || 'non renseignée'}
+- Besoins spéciaux : ${user.child_special_needs || 'aucun'}${religionLine}
 
-Le parent t'envoie ce message : "${parentMessage}"
+MESSAGE DU PARENT : "${parentMessage}"
 
-Réponds en tant que coach parental. Applique toutes les règles de SOUL.md :
-- Reconnais l'émotion d'abord si présente
-- Donne des conseils pratiques adaptés à l'âge de l'enfant et au contexte
-- Max 160 mots
-- Langue : ${user.language || 'fr'}
-- Pas de markdown complexe (WhatsApp)
+INSTRUCTIONS DE RÉPONSE :
+1. Commence TOUJOURS par reformuler la problématique en 1 phrase : "Je comprends que [reformulation courte]..."
+2. Reconnais l'émotion si présente (1 phrase max)
+3. Donne 2-3 conseils pratiques concrets adaptés au profil
+4. Termine par une phrase d'encouragement courte
+
+Règles : Max 160 mots. Langue : ${user.language || 'fr'}. Pas de #/## ni markdown complexe.
   `.trim();
 }
 
 module.exports = {
   callAI,
+  loadKnowledgeBase,
   buildMorningPrompt,
   buildEveningPrompt,
   buildWeeklyPrompt,

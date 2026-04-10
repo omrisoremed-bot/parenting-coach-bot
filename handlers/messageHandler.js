@@ -4,12 +4,16 @@ const { loadProfile, createProfile } = require('./profileLoader');
 const { getState, setState, clearState } = require('../services/sessionManager');
 const { startOnboarding, handleOnboardingMessage } = require('./onboardingFlow');
 const { sendMessage } = require('../services/whatsappService');
-const { callAI, buildConversationPrompt } = require('../services/aiService');
+const { callAI, buildConversationPrompt, loadKnowledgeBase } = require('../services/aiService');
 const logger = require('../services/logger');
 const fs = require('fs');
 const path = require('path');
 
 const soul = fs.readFileSync(path.join(__dirname, '..', 'agents', 'SOUL.md'), 'utf8');
+
+// Charge la base de connaissances une fois au démarrage
+const knowledgeBase = loadKnowledgeBase();
+const systemPrompt = soul + knowledgeBase;
 
 // ─── Commands ────────────────────────────────────────────────────────────────
 const COMMANDS = {
@@ -103,7 +107,7 @@ async function messageHandler(phone, text) {
 async function handleConversation(phone, text, profile) {
   try {
     const prompt = buildConversationPrompt(profile, text);
-    const reply = await callAI(soul, prompt);
+    const reply = await callAI(systemPrompt, prompt);
     await sendMessage(phone, reply);
   } catch (err) {
     logger.error('AI conversation error', { phone, error: err.message });
@@ -141,7 +145,7 @@ Langue : ${profile.language || 'fr'}
   `.trim();
 
   try {
-    const reply = await callAI(soul, prompt);
+    const reply = await callAI(systemPrompt, prompt);
     await sendMessage(phone, reply);
   } catch (err) {
     logger.error('Checkin response AI error', { phone, error: err.message });
