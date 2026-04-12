@@ -33,14 +33,23 @@ const Q = {
     family:       'ما هو وضعك العائلي؟\n\n1. متزوج/ة\n2. أحد الوالدين\n3. حضانة مشتركة\n4. عائلة ممتدة',
     culture:      'ما هي قيمك الثقافية أو الدينية؟\n(مثال: قيم إسلامية، تعليم ثنائي اللغة...)',
   },
-  darija: {
-    name:         'زوين! شنو سميتك؟',
-    child:        'شنو سمية ولدك/بنتك وشحال عمرو/ها؟\n(مثال: ياسين، جوج سنين و4 شهور)',
-    personality:  'كيفاش كتوصف شخصية ولدك/بنتك؟\n\n1. هادي وسهل\n2. نشيط وفضولي\n3. حساس وعاطفي\n4. عنيد ومستقل\n5. قلقان ومتعلق\n\nجاوب برقم ولا بكلماتك.',
-    special:      'واش عند ولدك/بنتك احتياجات خاصة؟\n(ADHD، توحد، قلق...)\n\nإلا لا، كتب "لا".',
-    challenges:   'شنو هي أكبر 3 مشاكل عندك مع ولدك/بنتك دابا؟\n\nمثال: سوارة ديال الغضب، صعوبة النوم...',
-    family:       'شنو هي وضعيتك العائلية؟\n\n1. متزوج/ة\n2. والد/ة وحيد\n3. حضانة مشتركة\n4. عائلة مركبة',
-    culture:      'شنو هي قيمك الثقافية ولا الدينية؟\n(مثال: قيم إسلامية، تعليم بالعربية والفرنسية...)',
+  es: {
+    name:         '¡Genial! ¿Cómo te llamas?',
+    child:        '¿Cuál es el nombre de tu hijo/a y su edad exacta?\n(ej: Carlos, 2 años y 4 meses)',
+    personality:  '¿Cómo describirías la personalidad de tu hijo/a?\n\n1. Tranquilo y fácil\n2. Enérgico y curioso\n3. Sensible y emotivo\n4. Terco e independiente\n5. Ansioso y apegado\n\nResponde con el número o descríbelo en pocas palabras.',
+    special:      '¿Tu hijo/a tiene necesidades especiales?\n(TDAH, autismo, ansiedad, trastornos del lenguaje...)\n\nSi no, escribe "Ninguna".',
+    challenges:   '¿Cuáles son tus 3 mayores desafíos con tu hijo/a ahora?\n\nEj: berrinches, problemas de sueño, desobediencia...',
+    family:       '¿Cuál es tu situación familiar?\n\n1. En pareja\n2. Padre/madre soltero/a\n3. Coparentalidad\n4. Familia reconstituida',
+    culture:      '¿Valores culturales o religiosos a respetar?\n(ej: valores islámicos, educación bilingüe...)',
+  },
+  pt: {
+    name:         'Ótimo! Como você se chama?',
+    child:        'Qual é o nome e a idade exata do seu filho/a?\n(ex: Carlos, 2 anos e 4 meses)',
+    personality:  'Como você descreveria a personalidade do seu filho/a?\n\n1. Calmo e fácil\n2. Energético e curioso\n3. Sensível e emotivo\n4. Teimoso e independente\n5. Ansioso e dependente\n\nResponda com o número ou descreva em poucas palavras.',
+    special:      'Seu filho/a tem necessidades especiais?\n(TDAH, autismo, ansiedade, atrasos na fala...)\n\nSe não, escreva "Nenhuma".',
+    challenges:   'Quais são seus 3 maiores desafios com seu filho/a agora?\n\nEx: birras, problemas de sono, desobediência...',
+    family:       'Qual é a sua situação familiar?\n\n1. Casal\n2. Pai/mãe solteiro/a\n3. Coparentalidade\n4. Família reconstituída',
+    culture:      'Valores culturais ou religiosos a respeitar?\n(ex: valores islâmicos, educação bilíngue...)',
   },
   en: {
     name:         'Great! What\'s your name?',
@@ -80,10 +89,11 @@ const familyMap = {
   '1': 'married', '2': 'single-parent', '3': 'co-parenting', '4': 'blended-family'
 };
 const langMap = {
-  '1': 'fr', '2': 'ar', '3': 'darija', '4': 'en',
+  '1': 'fr', '2': 'ar', '3': 'es', '4': 'pt', '5': 'en',
   'fr': 'fr', 'français': 'fr', 'french': 'fr',
   'ar': 'ar', 'arabe': 'ar', 'arabic': 'ar', 'عربية': 'ar', 'عربي': 'ar',
-  'darija': 'darija', 'دارجة': 'darija', 'دارجه': 'darija',
+  'es': 'es', 'español': 'es', 'spanish': 'es', 'espagnol': 'es',
+  'pt': 'pt', 'português': 'pt', 'portuguese': 'pt', 'portugais': 'pt',
   'en': 'en', 'english': 'en', 'anglais': 'en'
 };
 
@@ -92,9 +102,9 @@ async function startOnboarding(phone) {
   setState(phone, { step: 'onboarding', onboarding_step: 0 });
   await updateProfile(phone, { onboarding_step: 0, session_state: 'onboarding', language: DEFAULT_LANG });
 
-  const welcome = `👋 Bonjour / مرحبا / السلام عليكم
+  const welcome = `👋 Bonjour / مرحبا / Hola / Olá
 
-Je suis ton *Coach Parental IA* 🍼
+Je suis ton *NurtureCoach* — Coach Parental IA 🍼
 
 📌 Pour te reconnecter : envoie *${JOIN_CODE}* au *+1 415 523 8886*
 
@@ -102,8 +112,9 @@ Je suis ton *Coach Parental IA* 🍼
 
 1️⃣ Français
 2️⃣ العربية (Arabe)
-3️⃣ الدارجة (Darija)
-4️⃣ English`;
+3️⃣ Español
+4️⃣ Português
+5️⃣ English`;
 
   await sendMessage(phone, welcome);
 }
