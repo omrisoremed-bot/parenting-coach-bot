@@ -1,5 +1,5 @@
 # Sommaire — Parenting Coach IA
-> Dernière mise à jour : 2026-04-10
+> Dernière mise à jour : 2026-04-12
 
 ## Description
 Bot WhatsApp de coaching parental propulsé par IA (Mistral Large via NVIDIA NIM). Conseils personnalisés quotidiens, onboarding multilingue (FR/AR/Darija/EN), transcription audio, base de connaissances, et réponses adaptées à la religion/culture de chaque famille.
@@ -29,7 +29,7 @@ Bot WhatsApp de coaching parental propulsé par IA (Mistral Large via NVIDIA NIM
 - **AI :** NVIDIA NIM — `mistralai/mistral-large-2-instruct`
 - **Messagerie :** Twilio WhatsApp Sandbox (dev) / Meta Cloud API (prod)
 - **Transcription :** Groq Whisper (`whisper-large-v3-turbo`)
-- **Stockage :** JSON (profils utilisateurs) → SQLite prévu v2
+- **Stockage :** SQLite WAL (`better-sqlite3`) — migration JSON→SQLite complète
 - **Logs :** Winston
 - **Scheduling :** node-cron → BullMQ prévu v2
 - **Déploiement :** Railway (service `parenting-coach-production-6c1b.up.railway.app`)
@@ -77,4 +77,20 @@ Bot WhatsApp de coaching parental propulsé par IA (Mistral Large via NVIDIA NIM
 - **Health check :** `/health`
 - **Repo GitHub :** `omrisoremed-bot/parenting-coach-bot`
 
-## Status : ✅ Actif — En production sur Railway
+## Landing Page (Nour)
+- **URL publique :** https://omrisoremed-bot.github.io/parenting-coach-bot/
+- **Hébergement :** GitHub Pages (branche `gh-pages`)
+- **Nom du bot :** Nour (نور) — "La Lumière"
+- **Chatbot landing :** Groq `llama-3.3-70b-versatile` (appel direct navigateur)
+- **Blog :** 6 articles SEO/EEAT dans `landing/blog/`
+
+| Article | Auteur | Keyword principal |
+|---------|--------|------------------|
+| `crises-colere-enfant.html` | Dr. Amina Benali | crises de colère enfant techniques |
+| `style-parental-autoritatif.html` | Sophie Marchand | style parental autoritatif enfant |
+| `attachement-secure-bebe.html` | Youssef El Khatib | attachement sécure bébé développement |
+| `ecrans-enfants-developpement.html` | Dr. Amina Benali | écrans enfants développement cognitif |
+| `communication-parents-adolescents.html` | Sophie Marchand | communication parents adolescents conflits |
+| `sommeil-enfant-developpement.html` | Youssef El Khatib | sommeil enfant développement heures |
+
+## Status : ✅ Actif — En production sur Railway + Landing sur GitHub Pages
