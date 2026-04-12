@@ -4,6 +4,10 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const logger = require('./services/logger');
+
+// ─── Init SQLite DB au démarrage (crée le schéma si absent) ─────────────────
+require('./services/database').getDb();
+
 const messageHandler = require('./handlers/messageHandler');
 const { initCronJobs } = require('./cron');
 

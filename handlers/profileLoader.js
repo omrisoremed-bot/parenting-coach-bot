@@ -1,54 +1,115 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
+/**
+ * profileLoader.js — Accès aux profils utilisateurs via SQLite
+ *
+ * API publique IDENTIQUE à l'ancienne version JSON :
+ *   loadProfile(phone)           → profile | null
+ *   saveProfile(phone, data)     → void
+ *   createProfile(phone)         → profile
+ *   updateProfile(phone, updates)→ profile
+ *   getAllActiveUsers()           → profile[]
+ *   getAllUsers()                 → profile[]
+ *
+ * Les données imbriquées (parent, children, challenges, weekly_checkins)
+ * sont stockées en JSON TEXT dans SQLite et (dé)sérialisées automatiquement.
+ */
+
+const { getDb } = require('../services/database');
 const logger = require('../services/logger');
 
-const USERS_DIR = path.join(__dirname, '..', 'users');
+// ── Colonnes JSON (stockées sous forme TEXT, parsées à la lecture) ──────────
+const JSON_COLS = ['parent', 'children', 'challenges', 'weekly_checkins'];
 
-// Ensure users directory exists
-if (!fs.existsSync(USERS_DIR)) {
-  fs.mkdirSync(USERS_DIR, { recursive: true });
-}
-
-function profilePath(phone) {
-  // Sanitize phone number for safe filename
-  const safe = phone.replace(/[^0-9+]/g, '');
-  return path.join(USERS_DIR, `${safe}.json`);
+/**
+ * Convertit une ligne SQLite brute en objet profil JS.
+ */
+function rowToProfile(row) {
+  if (!row) return null;
+  const p = { ...row };
+  for (const col of JSON_COLS) {
+    try {
+      p[col] = JSON.parse(p[col] || (col === 'parent' ? '{}' : '[]'));
+    } catch {
+      p[col] = col === 'parent' ? {} : [];
+    }
+  }
+  p.onboarding_complete = p.onboarding_complete === 1;
+  p.cron_active         = p.cron_active === 1;
+  return p;
 }
 
 /**
- * Load a user profile. Returns null if not found.
+ * Convertit un objet profil JS en colonnes SQLite (JSON sérialisés).
+ */
+function profileToRow(p) {
+  const row = { ...p };
+  for (const col of JSON_COLS) {
+    row[col] = JSON.stringify(p[col] ?? (col === 'parent' ? {} : []));
+  }
+  row.onboarding_complete = p.onboarding_complete ? 1 : 0;
+  row.cron_active         = p.cron_active ? 1 : 0;
+  return row;
+}
+
+// ── API publique ─────────────────────────────────────────────────────────────
+
+/**
+ * Charger un profil. Retourne null si inexistant.
  */
 function loadProfile(phone) {
-  const filePath = profilePath(phone);
-  if (!fs.existsSync(filePath)) return null;
-
   try {
-    const raw = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(raw);
+    const db  = getDb();
+    const row = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
+    return rowToProfile(row);
   } catch (err) {
-    logger.error('Failed to parse profile', { phone, error: err.message });
+    logger.error('loadProfile error', { phone, error: err.message });
     return null;
   }
 }
 
 /**
- * Save (create or overwrite) a user profile.
+ * Sauvegarder (créer ou remplacer) un profil complet.
  */
 function saveProfile(phone, data) {
-  const filePath = profilePath(phone);
   try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+    const db  = getDb();
+    const row = profileToRow({ ...data, phone, last_active: new Date().toISOString() });
+
+    db.prepare(`
+      INSERT INTO users (
+        phone, language, onboarding_complete, onboarding_step,
+        created_at, last_active, cron_active, session_state,
+        parent, children, challenges, parenting_style, cultural_context, weekly_checkins
+      ) VALUES (
+        @phone, @language, @onboarding_complete, @onboarding_step,
+        @created_at, @last_active, @cron_active, @session_state,
+        @parent, @children, @challenges, @parenting_style, @cultural_context, @weekly_checkins
+      )
+      ON CONFLICT(phone) DO UPDATE SET
+        language            = excluded.language,
+        onboarding_complete = excluded.onboarding_complete,
+        onboarding_step     = excluded.onboarding_step,
+        last_active         = excluded.last_active,
+        cron_active         = excluded.cron_active,
+        session_state       = excluded.session_state,
+        parent              = excluded.parent,
+        children            = excluded.children,
+        challenges          = excluded.challenges,
+        parenting_style     = excluded.parenting_style,
+        cultural_context    = excluded.cultural_context,
+        weekly_checkins     = excluded.weekly_checkins
+    `).run(row);
+
     logger.debug('Profile saved', { phone });
   } catch (err) {
-    logger.error('Failed to save profile', { phone, error: err.message });
+    logger.error('saveProfile error', { phone, error: err.message });
     throw err;
   }
 }
 
 /**
- * Create a new blank profile for a phone number.
+ * Créer un nouveau profil vierge.
  */
 function createProfile(phone) {
   const profile = {
@@ -72,11 +133,11 @@ function createProfile(phone) {
 }
 
 /**
- * Update specific fields on a profile (shallow merge at top level).
+ * Mettre à jour certains champs (merge superficiel au niveau racine).
  */
 function updateProfile(phone, updates) {
   const existing = loadProfile(phone) || createProfile(phone);
-  const updated = {
+  const updated  = {
     ...existing,
     ...updates,
     last_active: new Date().toISOString()
@@ -86,48 +147,33 @@ function updateProfile(phone, updates) {
 }
 
 /**
- * Return all profiles with cron_active = true.
+ * Tous les utilisateurs avec cron actif et onboarding terminé.
  */
 function getAllActiveUsers() {
-  if (!fs.existsSync(USERS_DIR)) return [];
-
-  const files = fs.readdirSync(USERS_DIR).filter(f => f.endsWith('.json'));
-  const users = [];
-
-  for (const file of files) {
-    try {
-      const raw = fs.readFileSync(path.join(USERS_DIR, file), 'utf8');
-      const profile = JSON.parse(raw);
-      if (profile.cron_active && profile.onboarding_complete) {
-        users.push(profile);
-      }
-    } catch (err) {
-      logger.warn('Skipping corrupt profile file', { file, error: err.message });
-    }
+  try {
+    const db   = getDb();
+    const rows = db.prepare(
+      'SELECT * FROM users WHERE cron_active = 1 AND onboarding_complete = 1'
+    ).all();
+    return rows.map(rowToProfile);
+  } catch (err) {
+    logger.error('getAllActiveUsers error', { error: err.message });
+    return [];
   }
-
-  return users;
 }
 
 /**
- * Return all profiles (for admin use).
+ * Tous les utilisateurs (admin).
  */
 function getAllUsers() {
-  if (!fs.existsSync(USERS_DIR)) return [];
-
-  const files = fs.readdirSync(USERS_DIR).filter(f => f.endsWith('.json'));
-  const users = [];
-
-  for (const file of files) {
-    try {
-      const raw = fs.readFileSync(path.join(USERS_DIR, file), 'utf8');
-      users.push(JSON.parse(raw));
-    } catch {
-      // skip corrupt files
-    }
+  try {
+    const db   = getDb();
+    const rows = db.prepare('SELECT * FROM users').all();
+    return rows.map(rowToProfile);
+  } catch (err) {
+    logger.error('getAllUsers error', { error: err.message });
+    return [];
   }
-
-  return users;
 }
 
 module.exports = {

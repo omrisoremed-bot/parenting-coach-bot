@@ -4,3 +4,7 @@ users/
 logs/
 *.log
 .DS_Store
+# SQLite — ne pas versionner la DB locale
+data/*.db
+data/*.db-shm
+data/*.db-wal
