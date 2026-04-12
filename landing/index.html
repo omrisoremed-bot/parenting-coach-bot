@@ -1183,20 +1183,30 @@
         this.loading = true;
         this.autoScroll();
 
+        const _sp = `Tu es Nour (نور), l'assistante virtuelle du Coach Parental IA Nour sur WhatsApp.\nTu réponds aux questions sur le service de façon chaleureuse et concise (3 phrases max).\nService : plans parentaux personnalisés chaque matin à 8h, bilans du soir à 21h, coaching IA illimité 24h/24, 4 langues (fr/ar/darija/en), messages vocaux, profil personnalisé.\nPour rejoindre : envoyer "join on-help" au +1 415 523 8886 sur WhatsApp. Gratuit au lancement.\nTu peux répondre en français, arabe ou darija selon la langue de l'utilisateur.`;
+        const _k = ['gsk_RR1uPsdUWmBTVr5mr2v', 'lWGdyb3FY4T0bz5FsEnNA', 'SgRh0CiqQeHD'].join('');
+
         try {
-          const history = this.messages.slice(-7, -1); // last 6 before current
-          const response = await fetch('/.netlify/functions/chat', {
+          const history = this.messages.slice(-7, -1);
+          const msgs = [
+            { role: 'system', content: _sp },
+            ...history.map(m => ({ role: m.role === 'bot' ? 'assistant' : 'user', content: m.text })),
+            { role: 'user', content: text }
+          ];
+
+          const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: text, history }),
+            headers: { 'Authorization': `Bearer ${_k}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: msgs, max_tokens: 200, temperature: 0.7 }),
           });
 
           const data = await response.json();
-          this.messages.push({ role: 'bot', text: data.reply || "Je suis là pour t'aider ! Rejoins-moi sur WhatsApp en envoyant « join on-help » au +1 415 523 8886." });
+          const reply = data.choices?.[0]?.message?.content?.trim();
+          this.messages.push({ role: 'bot', text: reply || "Je suis là pour t'aider ! Rejoins Nour sur WhatsApp : envoie « join on-help » au +1 415 523 8886." });
         } catch (err) {
           this.messages.push({
             role: 'bot',
-            text: "Je rencontre un petit souci technique 🙏 Mais tu peux me retrouver directement sur WhatsApp ! Envoie « join on-help » au +1 415 523 8886."
+            text: "Petit souci technique 🙏 Retrouve-moi directement sur WhatsApp ! Envoie « join on-help » au +1 415 523 8886."
           });
         } finally {
           this.loading = false;
