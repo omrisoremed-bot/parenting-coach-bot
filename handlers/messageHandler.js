@@ -17,10 +17,11 @@ const systemPrompt = soul + knowledgeBase;
 
 // ─── Commands ────────────────────────────────────────────────────────────────
 const COMMANDS = {
-  STOP: ['pause', 'arrêt', 'arret', 'désabonner', 'désabonnement'],
+  STOP:   ['pause', 'arrêt', 'arret', 'désabonner', 'désabonnement'],
   RESUME: ['resume', 'reprendre', 'start', 'activer', 'commencer'],
-  HELP: ['aide', 'help', '?', 'menu'],
-  RESET: ['reset', 'recommencer', 'restart', 'nouveau profil']
+  HELP:   ['aide', 'help', '?', 'menu'],
+  RESET:  ['reset', 'recommencer', 'restart', 'nouveau profil'],
+  PROFIL: ['profil', 'profile', 'mon profil', 'mes infos', 'voir profil']
 };
 
 /**
@@ -60,6 +61,11 @@ async function messageHandler(phone, text) {
 
   if (command === 'HELP') {
     await sendMessage(phone, buildHelpMessage());
+    return;
+  }
+
+  if (command === 'PROFIL') {
+    await sendMessage(phone, buildProfileMessage(profile));
     return;
   }
 
@@ -163,11 +169,48 @@ function detectCommand(text) {
   return null;
 }
 
+function buildProfileMessage(profile) {
+  const p = profile.parent || {};
+  const children = (profile.children || []);
+  const challenges = (profile.challenges || []);
+
+  const langLabels = { fr: '🇫🇷 Français', ar: '🇲🇦 Arabe', darija: '🇲🇦 Darija', en: '🇬🇧 Anglais' };
+  const cronStatus = profile.cron_active ? '✅ Actif' : '⏸️ En pause';
+
+  const childrenText = children.length
+    ? children.map(c => `  • ${c.name || '?'}, ${c.age || '?'} ans${c.gender ? ` (${c.gender})` : ''}`).join('\n')
+    : '  • Non renseigné';
+
+  const challengesText = challenges.length
+    ? challenges.map(c => `  • ${c}`).join('\n')
+    : '  • Aucun renseigné';
+
+  return `*MON PROFIL — COACH PARENTAL* 👤
+
+*Parent :* ${p.name || 'Non renseigné'}
+*Langue :* ${langLabels[profile.language] || profile.language || 'fr'}
+*Style parental :* ${profile.parenting_style || 'Non défini'}
+*Contexte culturel :* ${profile.cultural_context || 'Non renseigné'}
+
+*Enfant(s) :*
+${childrenText}
+
+*Défis déclarés :*
+${challengesText}
+
+*Messages automatiques :* ${cronStatus}
+*Membre depuis :* ${profile.created_at ? new Date(profile.created_at).toLocaleDateString('fr-FR') : '?'}
+
+📝 Tape *reset* pour recommencer le profil
+❓ Tape *aide* pour voir toutes les commandes`;
+}
+
 function buildHelpMessage() {
   const joinCode = process.env.SANDBOX_JOIN_CODE || 'join on-help';
   return `*COACH PARENTAL — AIDE* 🍼
 
 *Commandes disponibles :*
+• *profil* — Voir ton profil
 • *pause* — Pause les messages automatiques
 • *reprendre* — Réactiver les messages
 • *reset* — Recommencer le profil

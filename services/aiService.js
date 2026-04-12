@@ -38,8 +38,10 @@ const logger = require('./logger');
 const DEFAULT_BASE_URL = 'https://integrate.api.nvidia.com/v1';
 const DEFAULT_MODEL    = 'mistralai/mistral-large-2-instruct';
 
-const MAX_TOKENS  = 1024;
-const MAX_HISTORY = 10; // keep last N turns to avoid token bloat
+const MAX_TOKENS   = 1024;
+const MAX_HISTORY  = 10;  // keep last N turns to avoid token bloat
+const MAX_RETRIES  = 3;
+const RETRY_DELAY  = 1500; // ms base delay (doubles each attempt)
 
 let _client = null;
 
@@ -58,8 +60,26 @@ function getModel() {
 }
 
 /**
+ * Sleep helper for retry backoff.
+ */
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Determine if an error is retryable (rate-limit, timeout, transient server errors).
+ */
+function isRetryable(err) {
+  const status = err?.status || err?.response?.status;
+  if (status === 429 || status === 503 || status === 502 || status === 504) return true;
+  const msg = (err?.message || '').toLowerCase();
+  return msg.includes('timeout') || msg.includes('econnreset') || msg.includes('network');
+}
+
+/**
  * Call the AI with a system prompt, optional conversation history, and a user message.
  * Uses OpenAI Chat Completions format — compatible with NVIDIA NIM, Groq, OpenRouter, etc.
+ * Retries up to MAX_RETRIES times with exponential backoff on transient errors.
  *
  * @param {string} systemPrompt
  * @param {string} userMessage
@@ -85,21 +105,43 @@ async function callAI(systemPrompt, userMessage, history = []) {
     historyLen: trimmedHistory.length
   });
 
-  const response = await client.chat.completions.create({
-    model,
-    messages,
-    max_tokens:   MAX_TOKENS,
-    temperature:  0.7,
-    top_p:        0.95
-  });
+  let lastErr;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const response = await client.chat.completions.create({
+        model,
+        messages,
+        max_tokens:   MAX_TOKENS,
+        temperature:  0.7,
+        top_p:        0.95
+      });
 
-  const text = response.choices[0]?.message?.content || '';
-  logger.debug('AI response', {
-    chars:      text.length,
-    stopReason: response.choices[0]?.finish_reason
-  });
+      const text = response.choices[0]?.message?.content || '';
+      logger.debug('AI response', {
+        chars:      text.length,
+        stopReason: response.choices[0]?.finish_reason,
+        attempt
+      });
 
-  return text;
+      return text;
+
+    } catch (err) {
+      lastErr = err;
+      if (isRetryable(err) && attempt < MAX_RETRIES) {
+        const delay = RETRY_DELAY * Math.pow(2, attempt - 1); // 1.5s, 3s, 6s
+        logger.warn(`AI call failed (attempt ${attempt}/${MAX_RETRIES}), retrying in ${delay}ms`, {
+          error: err.message,
+          status: err?.status
+        });
+        await sleep(delay);
+      } else {
+        break;
+      }
+    }
+  }
+
+  logger.error('AI call failed after all retries', { error: lastErr?.message });
+  throw lastErr;
 }
 
 // ─── Prompt builders ──────────────────────────────────────────────────────────
