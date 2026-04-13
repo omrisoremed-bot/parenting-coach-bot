@@ -5,9 +5,9 @@ const CORS_HEADERS = {
 };
 
 const FALLBACK_MESSAGE =
-  "Bonjour ! Je suis Nour ✨ Je ne peux pas répondre pour le moment, mais tu peux rejoindre le service en envoyant « join on-help » au +1 415 523 8886 sur WhatsApp. C'est gratuit pendant le lancement !";
+  "Bonjour ! Je suis ParentEase. Je ne peux pas répondre pour le moment, mais tu peux rejoindre le service en envoyant « join on-help » au +1 415 523 8886 sur WhatsApp. C'est gratuit pendant le lancement !";
 
-const SYSTEM_PROMPT = `Tu es NurtureCoach, l'assistante virtuelle du service NurtureCoach Parenting Coach sur WhatsApp.
+const SYSTEM_PROMPT = `Tu es ParentEase, l'assistante virtuelle du service ParentEase Parenting Coach sur WhatsApp.
 Tu réponds aux questions sur le service de façon chaleureuse et concise (3 phrases maximum).
 
 Détails du service :

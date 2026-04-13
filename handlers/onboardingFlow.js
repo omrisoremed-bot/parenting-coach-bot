@@ -104,7 +104,7 @@ async function startOnboarding(phone) {
 
   const welcome = `👋 Bonjour / مرحبا / Hola / Olá
 
-Je suis ton *NurtureCoach* — Coach Parental IA 🍼
+Je suis ton *ParentEase* — Coach Parental IA 🍼
 
 📌 Pour te reconnecter : envoie *${JOIN_CODE}* au *+1 415 523 8886*
 
