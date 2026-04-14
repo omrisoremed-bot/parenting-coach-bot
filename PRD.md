@@ -1,247 +1,431 @@
-# PRD — Parenting Coach IA (WhatsApp Bot)
-> Version 1.0 — 2026-04-10
+# PRD — ParentEase (multi-canal)
+> Version 2.0 — 2026-04-14
+> Remplace l'ancien PRD WhatsApp-only (archivé sous `PRD-v1-whatsapp.md`)
 
 ---
 
-## 1. Vue d'ensemble
+## 1. Vision produit
 
-**Parenting Coach** est un bot WhatsApp propulsé par IA qui accompagne les parents au quotidien : conseils personnalisés, plans matinaux, check-ins soir, bilan hebdomadaire, et réponses contextuelles à leurs questions. Le bot gère des profils multi-utilisateurs, respecte la langue et la religion de chaque famille, et peut transcrire des messages vocaux.
+**ParentEase** est un coach parental IA accessible **partout où les parents se trouvent déjà** : WhatsApp, Telegram, web. Chaque canal partage le même cerveau (profil, mémoire, base de connaissances), la même méthodologie de coaching, et la même IA. En parallèle, un blog et un moteur de contenu social alimentent l'acquisition.
 
-**Objectif produit :** Devenir le coach parental IA le plus accessible du marché francophone/arabophone — disponible sur WhatsApp (canal déjà utilisé), sans app à installer, 24h/24.
+**Promesse produit :**
+> Un plan parental personnalisé chaque matin, une présence bienveillante 24h/24, en 5 langues — sans app à installer.
 
----
-
-## 2. Contexte — Outils et alternatives existants
-
-### 2.1 Frameworks de bot WhatsApp
-
-| Outil | Type | Forces | Limites |
-|-------|------|---------|---------|
-| **Twilio API** *(actuel)* | API officielle | Sandbox gratuit, stable | Payant en prod |
-| **Baileys** | Lib JS non-officielle | Gratuit, WebSocket direct | Risque ban WhatsApp |
-| **@green-api/whatsapp-bot** | NPM + API officielle | Syntaxe Telegraf, sessions | Moins documenté |
-| **Botpress** | Plateforme complète | Visual builder, connecteur WhatsApp inclus | Surcharge pour notre usage |
-| **Meta Cloud API** *(déjà intégré)* | API officielle Meta | Gratuit, permanent | Validation Meta Business requise |
-
-**Décision v1 :** Rester sur Twilio Sandbox (dev) + Meta Cloud API (prod). Simple, stable, déjà en place.
+**Positionnement concurrentiel :**
+- Woebot / Wysa → santé mentale adulte, closed-source, payant
+- Koko → peer-support communautaire, pas de coaching individuel
+- Headspace for Parents / Lovevery → contenu éditorial, pas d'IA conversationnelle
+- **ParentEase** → IA conversationnelle + plans quotidiens + multi-canal + OSS stack
 
 ---
 
-### 2.2 Modèles IA / LLM
+## 2. Périmètre fonctionnel (5 composants)
 
-| Outil | Modèle | Coût | Forces |
-|-------|--------|------|--------|
-| **NVIDIA NIM** *(actuel)* | Mistral Large 2 | Gratuit (quota) | Multilingue, rapide |
-| **Anthropic Claude** | Sonnet 4.6 | ~$3/M tokens | Meilleur raisonnement, contexte long |
-| **Groq LPU** | Llama 3.3 70B | Gratuit (quota) | Ultra-rapide (<1s) |
-| **OpenAI** | GPT-4o | ~$5/M tokens | Référence du marché |
+| # | Composant | État | Priorité |
+|---|-----------|------|----------|
+| A | **Landing page multilingue** (5 langues) | ✅ Déployée (GitHub Pages) | DONE |
+| B | **Bot WhatsApp** | ✅ En prod (Railway) | DONE — maintenance |
+| C | **Bot Telegram** | 🆕 | **Phase 1** |
+| D | **Webapp parent** (dashboard) | 🆕 | Phase 2 |
+| E | **Blog + CMS** | Partiel (6 articles) | Phase 3 |
+| F | **Moteur contenu social** | 🆕 | Phase 4 |
 
-**Décision v1 :** Garder NVIDIA NIM (gratuit). Migrer vers Claude Sonnet 4.6 en v2 si le quota est dépassé.
-
----
-
-### 2.3 Transcription audio
-
-| Outil | Langue | Latence | Coût |
-|-------|--------|---------|------|
-| **Groq Whisper** *(actuel)* | 99 langues | ~500ms | Gratuit (quota) |
-| **OpenAI Whisper local** | 99 langues | 1–3s | Gratuit (auto-hébergé) |
-| **Deepgram Nova-3** | 36 langues | ~300ms | Payant |
-| **AssemblyAI** | 99 langues | ~800ms | Payant |
-
-**Décision v1 :** Garder Groq Whisper. Passer à Whisper local (Hugging Face) si le quota est limité.
+Principe d'itération : pour **chaque nouveau composant**, livrer d'abord un **MVP minimal qui marche de bout en bout** (vaut mieux une v0 laide qui tourne qu'une v1 parfaite qui traîne), puis itérer.
 
 ---
 
-### 2.4 Mémoire & profils utilisateurs
+## 3. Recherche — projets OSS et outils similaires
 
-| Outil | Type | Forces | Limites |
-|-------|------|---------|---------|
-| **JSON fichiers** *(actuel)* | Fichiers locaux | Simple, lisible | Non-persistant si Railway restart |
-| **Mem0** | Mémoire sémantique IA | Retient préférences, contexte long terme | Dépendance externe |
-| **Zep** | Graphe temporel | Trace évolution du contexte | Complexe à setup |
-| **SQLite** | DB relationnelle légère | Persistant, pas de service externe | Requêtes SQL |
-| **Redis** | Cache mémoire | Ultra-rapide, sessions TTL | Service supplémentaire |
+### 3.1 Frameworks de bots de messagerie
 
-**Décision v1 :** Migrer de JSON vers **SQLite** (persistant, zéro service externe, même Railway). Mem0 en v3.
+| Domaine | Outil OSS | Langage | Notes |
+|---------|-----------|---------|-------|
+| WhatsApp officiel | **Meta Cloud API** (REST) | — | Gratuit 1000 msg/j. Templates obligatoires hors fenêtre 24h. Déjà intégré. |
+| WhatsApp officiel | **Twilio WhatsApp API** | REST | Sandbox gratuit. Prod payant. Déjà intégré. |
+| WhatsApp non-officiel | **Baileys** (`WhiskeySockets/Baileys`) | TypeScript | WebSocket direct. Risque ban. Bon pour self-hosting total. |
+| WhatsApp non-officiel | **whatsapp-web.js** | Node | Puppeteer. Instable. |
+| WhatsApp client Python | **pywa** (`david-lev/pywa`) | Python | Wrapper Cloud API propre. |
+| Telegram | **grammY** (`grammyjs/grammY`) | TS/JS | ⭐ Recommandé — moderne, plugins, sessions, typé. |
+| Telegram | **telegraf** | Node | Plus ancien que grammY, large écosystème. |
+| Telegram | **python-telegram-bot** | Python | Référence Python, très mature. |
+| Telegram | **aiogram** | Python (async) | Alternative async moderne. |
+| Telegram | **Pyrogram / Telethon** | Python | Client MTProto (userbots). Pas notre cas. |
 
----
-
-### 2.5 Scheduling (messages automatiques)
-
-| Outil | Type | Forces | Limites |
-|-------|------|---------|---------|
-| **node-cron** *(actuel)* | In-process | Simple, aucune dépendance | Perdu si crash |
-| **BullMQ** | Queue Redis | Persistant, dashboard, retry | Nécessite Redis |
-| **Agenda** | MongoDB-backed | Persistant, API simple | Nécessite MongoDB |
-| **node-cron + SQLite** | Hybride | Simple upgrade du stack actuel | Pas de retry avancé |
-
-**Décision v1 :** Garder node-cron. En v2, ajouter **BullMQ + Redis** (Railway propose Redis natif) pour la persistance.
+**Décision Phase 1 :** **grammY** (TypeScript/Node) — permet de **réutiliser tel quel** les services `aiService`, `transcriptionService`, `database` du bot WhatsApp actuel. Pas de duplication de logique.
 
 ---
 
-### 2.6 Base de connaissances
+### 3.2 Frameworks d'agents IA / orchestration LLM
 
-| Outil | Approche | Forces | Limites |
-|-------|----------|---------|---------|
-| **Fichiers .md** *(actuel)* | Injection directe dans prompt | Simple, 0 config | Limité par taille contexte |
-| **LlamaIndex** | RAG + vectorisation | Scalable, recherche sémantique | Python, overhead |
-| **LangChain** | RAG JS/Python | Flexible, Mistral natif | Complexité |
-| **Chroma** | Vector DB local | Léger, NPM/Python | Setup embeddings |
+| Outil | Langage | Usage pertinent |
+|-------|---------|-----------------|
+| **Claude Agent SDK** (`@anthropic-ai/claude-agent-sdk`) | TS/Py | Orchestration multi-tool, sub-agents, hooks. Idéal pour les jobs de content generation. |
+| **LangGraph** (`langchain-ai/langgraph`) | Python | Graphes d'états pour workflows long terme (ex: onboarding multi-étapes, génération d'articles). |
+| **CrewAI** (`crewAIInc/crewAI`) | Python | Équipes d'agents spécialisés (idéal pour le moteur social : writer + editor + visual). |
+| **OpenAI Agents SDK** | Python/TS | Alternative propriétaire. |
+| **AutoGen** (Microsoft) | Python | Multi-agent conversation. Plus lourd. |
+| **Mastra** (`mastra-ai/mastra`) | TS | Framework TS propre pour agents, workflows, RAG. Alternative 100% JS. |
 
-**Décision v1 :** Garder les fichiers `.md`. En v3, implémenter RAG avec LlamaIndex (quand la base dépasse ~20 fichiers).
-
----
-
-## 3. Fonctionnalités — Roadmap par étapes
-
-### ÉTAPE 1 — Base stable (MVP actuel + corrections) ✅ En cours
-
-**Objectif :** Bot stable, fiable, déployé 24/7.
-
-| # | Fonctionnalité | Statut |
-|---|---------------|--------|
-| 1.1 | Onboarding multilingue (FR/AR/Darija/EN) | ✅ Fait |
-| 1.2 | Profils utilisateurs JSON | ✅ Fait |
-| 1.3 | Coaching libre (Q&A) avec reformulation | ✅ Fait |
-| 1.4 | Messages cron : matin / soir / hebdo | ✅ Fait |
-| 1.5 | Transcription audio Groq Whisper | ✅ Fait |
-| 1.6 | Base de connaissances `.md` | ✅ Fait |
-| 1.7 | Déploiement Railway 24/7 | ✅ Fait |
-| 1.8 | Commandes utilisateur (AIDE, PAUSE, PROFIL, RESET) | ✅ Fait |
-| 1.9 | Réponses religion/culture-aware | ✅ Fait |
-
-**Améliorations immédiates :**
-- [ ] **1.10** Migrer stockage JSON → SQLite (persistance Railway restarts)
-- [ ] **1.11** Gestion d'erreurs robuste + retry sur appels IA
-- [ ] **1.12** Commande `PROFIL` pour afficher/modifier son profil
-- [ ] **1.13** Limiter longueur réponses à 300 mots (WhatsApp readability)
+**Décision :** Pas besoin en Phase 1 (bot Telegram = simple pass-through). En Phase 4 (contenu social) → **Claude Agent SDK** + sub-agents (1 agent writer, 1 agent editor, 1 agent visual prompt).
 
 ---
 
-### ÉTAPE 2 — Expérience enrichie
+### 3.3 Mémoire longue et RAG
 
-**Objectif :** Rendre le bot plus utile et engageant au quotidien.
+| Outil | Type | Notes |
+|-------|------|-------|
+| **Mem0** (`mem0ai/mem0`) | Mémoire sémantique | Stocke préférences, habitudes parent/enfant. API simple. |
+| **Zep** (`getzep/zep`) | Graphe temporel | Trace l'évolution (ex: "l'enfant X dormait mal en mars"). Plus complexe. |
+| **Cognee** (`topoteretes/cognee`) | Memory layer OSS | Jeune, prometteur. |
+| **LlamaIndex** (`run-llama/llama_index`) | RAG framework | Référence Python. Beaucoup d'intégrations. |
+| **LangChain** | RAG/chain | Trop lourd pour nos besoins. |
+| **Haystack** (`deepset-ai/haystack`) | RAG prod-ready | Alternative mature. |
+| **Chroma** (`chroma-core/chroma`) | Vector DB | Léger, embarquable Node+Python. |
+| **LanceDB** | Vector DB | Rust/JS, très rapide, fichier local. |
+| **sqlite-vec** | Extension SQLite | ⭐ **Idéal pour nous** — vecteurs dans notre DB existante, zéro service externe. |
 
-| # | Fonctionnalité | Description |
-|---|---------------|-------------|
-| 2.1 | **Mémoire contextuelle** | Le bot se souvient des 10 derniers échanges par utilisateur (rolling window) |
-| 2.2 | **Suivi des objectifs** | L'utilisateur peut définir 1-3 objectifs parentaux, le bot y fait référence |
-| 2.3 | **Suggestions proactives** | Le bot propose un défi parental hebdomadaire basé sur le profil |
-| 2.4 | **Commande ASTUCE** | Envoie une astuce parenting aléatoire de la base de connaissances |
-| 2.5 | **Accusé de réception intelligent** | Répond en <3s avec "Je réfléchis..." si traitement long |
-| 2.6 | **Scheduling persistant** | BullMQ + Redis pour les crons (no message loss on restart) |
-| 2.7 | **Panel admin web minimal** | Page `/admin` protégée par token : liste users, stats envois |
-
----
-
-### ÉTAPE 3 — Personnalisation avancée
-
-**Objectif :** Le bot devient un vrai coach personnalisé sur la durée.
-
-| # | Fonctionnalité | Description |
-|---|---------------|-------------|
-| 3.1 | **Profil enfant étendu** | Âge, personnalité, défis spécifiques (TDAH, timidité, etc.) |
-| 3.2 | **Plans hebdomadaires générés** | Le bot génère un plan 7 jours adapté à l'enfant |
-| 3.3 | **Base de connaissances RAG** | LlamaIndex : recherche sémantique dans 50+ articles/PDF |
-| 3.4 | **Mémoire long terme** | Mem0 : le bot retient les habitudes, succès et difficultés |
-| 3.5 | **Multi-enfants** | Support jusqu'à 3 enfants par profil parent |
-| 3.6 | **Rappels ponctuels** | "Rappelle-moi demain à 18h de parler à mon fils de..." |
-| 3.7 | **Contenu multimédia** | Envoi de courts articles, images, infographies (Meta API) |
+**Décision :** Pour la v1 du RAG blog/knowledge → **sqlite-vec** (garde le stack SQLite existant). Pour la mémoire long terme parent → **Mem0** en Phase 2.
 
 ---
 
-### ÉTAPE 4 — Scalabilité & monétisation
+### 3.4 Webapp (dashboard parent)
 
-**Objectif :** Passer de prototype à produit commercialisable.
+| Outil | Notes |
+|-------|-------|
+| **Next.js 15** (App Router) | ⭐ Référence React full-stack. Vercel gratuit. |
+| **Astro** | Idéal blog + îlots interactifs. Léger. Déjà utilisé pour landing. |
+| **SvelteKit** | Alternative légère. |
+| **Remix** → Fusionne avec React Router v7 | |
+| **FastAPI + HTMX** | Si on passe côté Python. |
+| **Pocketbase** (`pocketbase/pocketbase`) | Backend 100% en un binaire Go : auth, realtime, fichiers. SQLite embarqué. |
+| **Supabase** | Backend OSS (Postgres + auth + storage). Très complet. |
+| **Clerk / Auth.js / Lucia** | Auth. Clerk = SaaS, Auth.js = OSS. |
 
-| # | Fonctionnalité | Description |
-|---|---------------|-------------|
-| 4.1 | **Onboarding WhatsApp officiel** | Numéro WhatsApp Business dédié (Meta BSP) |
-| 4.2 | **Abonnement** | Freemium : 5 messages/jour gratuit, illimité payant |
-| 4.3 | **Dashboard parent** | Web app légère : historique, objectifs, progression |
-| 4.4 | **Analytics** | Amplitude/PostHog : taux engagement, messages/jour, rétention |
-| 4.5 | **Multi-langues étendu** | Espagnol, Turc, Soninké (diasporas cibles) |
-| 4.6 | **API partenaires** | Écoles, mutuelles, associations parentales |
+**Décision Phase 2 :** **Astro** (landing déjà en Astro-compatible) + **îlot React** pour le dashboard + auth **phone OTP via WhatsApp bot existant** (zéro nouveau service auth).
 
 ---
 
-## 4. Architecture technique cible (v2)
+### 3.5 Blog / CMS
+
+| Outil | Type | Notes |
+|-------|------|-------|
+| **Astro** | SSG + content collections | ⭐ Idéal : déjà dans notre stack. |
+| **Ghost** (`TryGhost/Ghost`) | Node + Handlebars | Très complet mais overkill. |
+| **Eleventy (11ty)** | SSG | Ultra léger. |
+| **Decap CMS** (ex-Netlify CMS) | CMS Git-based | UI pour éditer markdown via PR. |
+| **Tina CMS** | Git-based + visuel | Éditeur WYSIWYG sur markdown. |
+| **Payload CMS** (`payloadcms/payload`) | Headless TS | Très puissant, DB requise. |
+| **Directus** | Headless no-code | Python/Node, UI admin. |
+| **Sanity** (SaaS) | Référence headless | Free tier généreux. |
+
+**Décision Phase 3 :** **Astro content collections** pour le blog + **Decap CMS** pour l'édition no-code (publication via PR GitHub) + **script de génération d'articles Claude** (`scripts/generate-article.js`).
+
+---
+
+### 3.6 Moteur de contenu social (multimédia)
+
+#### Outils de planification/publication
+
+| Outil | Type | Notes |
+|-------|------|-------|
+| **Postiz** (`gitroomhq/postiz-app`) | OSS, Next.js | ⭐ Scheduler multi-réseaux self-hosted. IG, X, FB, TikTok, LinkedIn, YouTube, Threads, Pinterest. |
+| **Mixpost** (`inovector/Mixpost`) | OSS Laravel | Alternative PHP. |
+| **Buffer** | SaaS | Free tier : 3 comptes, 10 posts en file. |
+| **Typefully** | SaaS | Spécialisé X/Threads, bon éditeur. |
+| **Publer** | SaaS | Multi-réseaux, generous free. |
+| **n8n** / **Make** / **Latenode** | Workflow orchestrators | Peuvent brancher tout → tout. |
+
+#### Génération de visuels
+
+| Outil | Type | Notes |
+|-------|------|-------|
+| **Fal.ai** | API | Flux, SDXL, très rapide. Free credits. |
+| **Replicate** | API | Large catalogue modèles. Pay-per-run. |
+| **Flux.1 [dev]** (local) | Modèle OSS | Meilleure qualité open pour 2025. |
+| **Stable Diffusion XL / 3** | Modèle OSS | Classique. |
+| **DALL-E 3** (OpenAI) | API | Bonne qualité, payant. |
+| **Canva API** | API visuelle | Templates + branding. |
+| **Freepik API** | Stock + génération | Option commerciale. |
+
+#### Génération de vidéos courtes
+
+| Outil | Notes |
+|-------|-------|
+| **Remotion** (`remotion-dev/remotion`) | ⭐ Video-as-React. Idéal pour templates scriptés (quotes + voix off + ken burns). |
+| **ShortGPT** (`RayVentura/ShortGPT`) | Pipeline YouTube Shorts/TikTok : script Claude → voix off → visuels → rendu FFmpeg. |
+| **MoneyPrinterV2** | Alternative, très populaire. |
+| **Captions.ai** / **Opus Clip** | SaaS : recoupe long-form → shorts. |
+| **FFmpeg** | Brique de base. |
+| **Whisper + forced alignment** | Pour sous-titres karaoké. |
+
+#### Voix synthétique
+
+| Outil | Notes |
+|-------|-------|
+| **ElevenLabs** | Meilleure qualité. Free tier limité. |
+| **Coqui XTTS v2** | OSS, self-host. |
+| **Kokoro-82M** | OSS ultra-léger 2025. |
+| **Azure / Google TTS** | Solides, commerciaux. |
+
+**Décision Phase 4 (MVP) :**
+1. **Postiz** self-hosted (Railway ou Fly.io) → scheduling multi-réseaux
+2. **Fal.ai** (Flux Schnell) → visuels carrousels IG
+3. **Remotion** → 1 template Short/Reel (quote + voix + kenburns)
+4. **Claude API** → génération script/caption/thread depuis un article blog
+5. **ElevenLabs** (free) → voix off pour la démo ; ensuite **Kokoro** self-host
+
+---
+
+### 3.7 Observabilité / analytics
+
+| Outil | Notes |
+|-------|-------|
+| **PostHog** (`PostHog/posthog`) | OSS, analytics + session replay + flags. Self-host possible. |
+| **Plausible** (OSS) | Web analytics simple. |
+| **Umami** (OSS) | Alternative Plausible. |
+| **Sentry** (OSS core) | Erreurs, performance. |
+| **Langfuse** (`langfuse/langfuse`) | ⭐ OSS LLM observability — traces, tokens, coûts par utilisateur. |
+| **Helicone** | Alternative SaaS LLM obs. |
+
+**Décision :** **Langfuse** (self-hosted Railway) dès Phase 2 pour tracer tous les appels Claude. **Plausible** pour la landing.
+
+---
+
+## 4. Roadmap par phases
+
+### Phase 0 — ✅ ACQUIS (ne pas toucher)
+- Bot WhatsApp Node.js stable (Meta/Twilio + Mistral/Claude + Groq Whisper + SQLite) déployé Railway
+- Landing page 5 langues (GitHub Pages) avec chat widget Groq
+- Blog 6 articles SEO statiques
+
+---
+
+### Phase 1 — Bot Telegram MVP *(prochaine étape)*
+
+**Objectif :** Parité fonctionnelle WhatsApp ↔ Telegram en réutilisant 100% du backend.
+
+**Livrable minimal :**
+- [ ] Ajouter `services/telegramService.js` (wrapper grammY) à côté de `whatsappService.js`
+- [ ] Créer `services/messengerAdapter.js` qui expose une interface commune `{send(to, text), onMessage(cb)}` et route vers Twilio/Meta/Telegram selon `process.env.PROVIDER`
+- [ ] Webhook Telegram `/webhook/telegram` dans `bot.js`
+- [ ] Stocker l'ID Telegram dans `users` table SQLite (colonne `telegram_id` ajoutée par migration)
+- [ ] Reproduire onboarding (réutilise `onboardingFlow.js` — déjà agnostique du canal)
+- [ ] Cron jobs : itérer sur users et envoyer via le bon provider
+- [ ] Tester : rejoindre depuis Telegram, compléter profil, recevoir plan matinal
+
+**Out of scope MVP :** Inline keyboards, voice messages (Telegram audio = OGG Opus, compatible Groq Whisper — à activer v2), payments.
+
+**Déploiement :** même service Railway, nouveau webhook chez `api.telegram.org`.
+
+---
+
+### Phase 2 — Webapp parent MVP
+
+**Objectif :** Un dashboard web read-only où le parent voit son profil, son historique de messages et son état d'abonnement.
+
+**Livrable minimal :**
+- [ ] Nouveau dossier `webapp/` — Astro + îlot React
+- [ ] Route `/login` : saisir numéro → bot WhatsApp/Telegram envoie OTP 6 chiffres → cookie session JWT 30j
+- [ ] Route `/dashboard` : profil (enfant âge, défis, langue), 20 derniers messages, prochains crons programmés
+- [ ] Backend : reuse `better-sqlite3` via une route Express `/api/me` protégée par JWT
+- [ ] Déployer sur Railway (même service que bot) ou séparer sur Vercel
+- [ ] Langfuse branché sur `aiService.js`
+
+**Out of scope MVP :** Édition profil web (se fait encore via WhatsApp), visuels, paiement.
+
+---
+
+### Phase 3 — Blog CMS + génération IA
+
+**Objectif :** Passer de 6 articles HTML hardcodés à un flux durable (≥2 articles/semaine) sans écrire chaque article à la main.
+
+**Livrable minimal :**
+- [ ] Migrer `landing/blog/*.html` → `webapp/src/content/blog/*.md` (Astro content collections)
+- [ ] Composants Astro `<BlogLayout>`, `<BlogCard>` réutilisant le design existant
+- [ ] `scripts/generate-article.js` : prend `{topic, keyword, lang, author}` → plan → rédaction Claude avec prompt caching → vérif SEO (H1/H2/meta) → écrit `.md` → ouvre une PR GitHub
+- [ ] **Decap CMS** monté sur `/admin` pour édition/validation no-code (publie via PR sur `main`)
+- [ ] Sitemap + RSS générés par Astro
+- [ ] Langfuse : coût/article tracké
+
+**Out of scope MVP :** Traductions automatiques des articles (Phase 3.5), commentaires, recherche full-text.
+
+---
+
+### Phase 4 — Moteur de contenu social
+
+**Objectif :** À partir d'un article blog, générer et publier automatiquement **1 post IG + 1 thread X + 1 Short/Reel vidéo** par semaine.
+
+**Livrable minimal :**
+- [ ] Script `scripts/article-to-social.js` :
+  1. Lit un `.md` d'article
+  2. **Agent writer (Claude)** → 5 hooks, 3 CTA, 10 bullets
+  3. **Agent editor** → choisit la version finale par plateforme (IG carousel 6 slides, X thread 5 tweets, caption TikTok 80 mots)
+  4. **Agent visual** → prompts Flux pour visuels carrousel
+  5. **Fal.ai Flux Schnell** → génère 6 visuels
+  6. **Remotion** → rend un Short 30s (quote + voix off ElevenLabs + ken burns sur visuels)
+  7. Pousse tout dans **Postiz** via son API → planifie à 12h
+- [ ] Déployer Postiz sur Railway
+- [ ] 1 template Remotion `ParentingQuoteShort.tsx` (prêt à l'emploi)
+- [ ] Cron weekly : lundi 9h, traite le dernier article non-publié
+
+**Out of scope MVP :** Long-form YouTube, podcast, analytics social, A/B testing hooks.
+
+---
+
+### Phase 5 — Consolidation & monétisation *(plus tard)*
+- Freemium : 5 messages/jour gratuit, illimité payant (Stripe)
+- Mem0 pour mémoire long terme
+- Dashboard édition profil
+- Multi-enfants
+- WhatsApp Business officiel (BSP)
+- Traductions automatiques des articles
+- Langfuse alerting (coût/jour)
+
+---
+
+## 5. Architecture cible (Phases 1–4)
 
 ```
-WhatsApp (Meta/Twilio)
-        │
-        ▼
-  Express.js bot.js
-        │
-   ┌────┴──────────────────────┐
-   │                           │
-messageHandler.js         onboardingFlow.js
-   │                           │
-   ▼                           ▼
-aiService.js              SQLite (profils)
-(NVIDIA NIM / Claude)          │
-   │                      BullMQ (Redis)
-   ▼                       cron jobs
-transcriptionService.js
-(Groq Whisper)
-   │
-knowledge/*.md  ──► (v3) LlamaIndex RAG
+                ┌─────────────────────────────────────────┐
+                │           UTILISATEURS                  │
+                │  WhatsApp  ·  Telegram  ·  Webapp       │
+                └────────┬───────────┬──────────┬─────────┘
+                         │           │          │
+                         ▼           ▼          ▼
+                ┌─────────────────────────────────────────┐
+                │         messengerAdapter.js             │
+                │  (whatsappService / telegramService)    │
+                └────────────────┬────────────────────────┘
+                                 ▼
+                ┌─────────────────────────────────────────┐
+                │         handlers/messageHandler         │
+                │  onboardingFlow · profileLoader · cmds  │
+                └────────────────┬────────────────────────┘
+                                 ▼
+        ┌────────────────────────┼────────────────────────┐
+        ▼                        ▼                        ▼
+  aiService.js          transcriptionSvc          database.js
+  Claude/NIM             Groq Whisper           better-sqlite3
+        │                        │                        │
+        │                        │                        ▼
+        │                        │              users · messages · crons
+        ▼                        │                        │
+  Langfuse (obs)                 │                        │
+        │                        ▼                        │
+        │              knowledge/*.md + sqlite-vec ──────►│
+        │              (RAG base)                          │
+        │                                                  │
+        └──────────────┐                                   │
+                       ▼                                   │
+           Claude Agent SDK                                │
+     (writer · editor · visual agents)                     │
+                       │                                   │
+                       ▼                                   │
+              Fal.ai Flux    Remotion    ElevenLabs        │
+                       │        │            │             │
+                       └────────┴────────────┘             │
+                                │                          │
+                                ▼                          │
+                         Postiz scheduler ◄────────────────┘
+                                │
+                                ▼
+            IG · X · TikTok · FB · YouTube · Threads
 ```
 
 ---
 
-## 5. Stack technique recommandée par étape
+## 6. Stack recommandée par phase
 
-| Composant | v1 (actuel) | v2 | v3 |
-|-----------|-------------|-----|-----|
-| Bot framework | Express.js | Express.js | Express.js |
-| Messagerie | Twilio / Meta | Meta Cloud API | Meta WhatsApp Business |
-| LLM | NVIDIA NIM (Mistral) | Claude Sonnet 4.6 | Claude + fine-tuning |
-| Transcription audio | Groq Whisper | Groq Whisper | Deepgram (temps réel) |
-| Stockage profils | JSON | SQLite | PostgreSQL |
-| Scheduling | node-cron | BullMQ + Redis | BullMQ + Redis |
-| Connaissances | Fichiers `.md` | Fichiers `.md` + résumé IA | LlamaIndex RAG |
-| Mémoire | Session JSON | Rolling window 10 msgs | Mem0 |
-| Déploiement | Railway | Railway | Railway + CDN |
-| Monitoring | Winston logs | Winston + Sentry | Sentry + Amplitude |
-
----
-
-## 6. Projets open-source de référence
-
-| Projet | GitHub | Pertinence |
-|--------|--------|------------|
-| **Baileys** | `WhiskeySockets/Baileys` | Alternative à Twilio (WhatsApp direct) |
-| **Botpress** | `botpress/botpress` | Inspiration architecture multi-canal |
-| **Mem0** | `mem0ai/mem0` | Mémoire long terme pour agents IA |
-| **LlamaIndex** | `run-llama/llama_index` | RAG pour la base de connaissances |
-| **BullMQ** | `taskforcesh/bullmq` | Scheduling persistant |
-| **Chroma** | `chroma-core/chroma` | Vector DB léger pour v3 |
-| **self-improvement-4all** | `tripathiarpan20/self-improvement-4all` | Pattern coaching IA (Plan-Act-Reflect) |
+| Composant | Phase 1 (Telegram) | Phase 2 (Webapp) | Phase 3 (Blog CMS) | Phase 4 (Social) |
+|-----------|-------------------|------------------|--------------------|------------------|
+| Runtime | Node 18+ | Node 18+ | Node 18+ | Node 18+ |
+| Bot Telegram | **grammY** | — | — | — |
+| Frontend | — | Astro + React | Astro content coll. | — |
+| Auth | — | JWT + OTP WhatsApp | — | — |
+| DB | `better-sqlite3` | idem | idem + **sqlite-vec** | idem |
+| LLM | Claude Sonnet 4.6 | idem | idem (+ prompt cache) | idem + **Claude Agent SDK** |
+| Observability | — | **Langfuse** | Langfuse | Langfuse |
+| CMS | — | — | **Decap CMS** | — |
+| Images | — | — | — | **Fal.ai** (Flux Schnell) |
+| Vidéo | — | — | — | **Remotion** |
+| Voix | — | — | — | ElevenLabs → Kokoro |
+| Scheduler social | — | — | — | **Postiz** |
+| Scheduler interne | node-cron | node-cron | node-cron | node-cron |
+| Hosting | Railway | Railway + Vercel | idem | idem + Postiz Railway |
 
 ---
 
-## 7. Métriques de succès
+## 7. Métriques de succès par phase
 
-| Métrique | Cible v1 | Cible v2 |
-|---------|----------|----------|
-| Uptime | > 99% | > 99.9% |
-| Temps de réponse | < 5s | < 3s |
-| Taux d'onboarding complet | > 70% | > 85% |
-| Rétention 7 jours | — | > 40% |
-| Messages/utilisateur/jour | 2–4 | 4–8 |
-
----
-
-## 8. Prochaines actions immédiates (Étape 1 — à compléter)
-
-1. **Ajouter `GROQ_API_KEY`** dans Railway (transcription audio)
-2. **Migrer JSON → SQLite** (priorité : persistance Railway)
-3. **Tester onboarding complet** en 4 langues sur WhatsApp
-4. **Commande PROFIL** : permettre à l'utilisateur de voir/modifier ses infos
-5. **Limiter les réponses** à 300 mots max (prompt engineering)
+| Phase | Métrique clé | Cible MVP |
+|-------|-------------|-----------|
+| 1 Telegram | % users Telegram complétant onboarding | >60% |
+| 2 Webapp | DAU webapp / DAU bot | >15% |
+| 3 Blog CMS | Temps pour publier 1 article (brouillon→prod) | <20 min |
+| 3 Blog CMS | Articles publiés/semaine | ≥2 |
+| 4 Social | Posts générés et publiés/semaine | ≥3 (IG + X + TikTok) |
+| 4 Social | Coût marginal / post (API + compute) | <0,15 $ |
 
 ---
 
-*PRD généré le 2026-04-10 — à réviser à chaque étape complétée.*
+## 8. Prochaines actions immédiates
+
+**Ordre d'exécution proposé :**
+
+1. **(Cette session)** Valider ce PRD, `CLAUDE_SKILLS.md`, `SOMMAIRE.md`
+2. **Phase 1.0** — Créer la branche `feat/telegram-mvp`, ajouter grammY, wrapper `telegramService.js`, webhook
+3. **Phase 1.1** — Refactoriser `whatsappService.js` derrière `messengerAdapter.js`
+4. **Phase 1.2** — Tester onboarding Telegram bout-en-bout
+5. **Phase 1.3** — Migrer les 3 crons pour envoyer via l'adapter
+6. **Go/No-Go** → Phase 2
+
+**Chaque phase suit le même pattern :**
+- `superpowers-brainstorming` → options + trade-offs
+- `superpowers-writing-plans` → plan d'implémentation détaillé
+- `feature-dev:feature-dev` → architecture + blueprint
+- Implémentation TDD (`superpowers-tdd`)
+- `superpowers-verification` avant de marquer terminé
+- `open-pr` + `multi-ai-code-review`
+
+---
+
+## 9. Références OSS étoilées (liens)
+
+| Projet | Repo | Phase |
+|--------|------|-------|
+| grammY | `grammyjs/grammY` | 1 |
+| Baileys | `WhiskeySockets/Baileys` | 0 (fallback) |
+| Langfuse | `langfuse/langfuse` | 2 |
+| Mem0 | `mem0ai/mem0` | 5 |
+| sqlite-vec | `asg017/sqlite-vec` | 3 |
+| LlamaIndex | `run-llama/llama_index` | 3 |
+| Astro | `withastro/astro` | 2, 3 |
+| Decap CMS | `decaporg/decap-cms` | 3 |
+| Pocketbase | `pocketbase/pocketbase` | 2 (alt) |
+| PostHog | `PostHog/posthog` | 5 |
+| Postiz | `gitroomhq/postiz-app` | 4 |
+| Remotion | `remotion-dev/remotion` | 4 |
+| ShortGPT | `RayVentura/ShortGPT` | 4 (ref) |
+| Claude Agent SDK | `anthropics/claude-agent-sdk-python` / `-typescript` | 4 |
+| CrewAI | `crewAIInc/crewAI` | 4 (alt) |
+| LangGraph | `langchain-ai/langgraph` | 4 (alt) |
+
+---
+
+## 10. Risques et mitigations
+
+| Risque | Impact | Mitigation |
+|--------|--------|-----------|
+| Ban WhatsApp (Baileys) | Haut | On reste sur Meta Cloud API officielle |
+| Meta template rejection | Moyen | Garder version non-template dans fenêtre 24h |
+| Quota Groq/NVIDIA épuisé | Moyen | Fallback Claude (déjà supporté) |
+| Coût Fal.ai explose | Moyen | Cache images + passer à Flux local |
+| Coût ElevenLabs | Bas | Fallback Kokoro self-host |
+| Postiz auto-hébergé instable | Moyen | Fallback Buffer free tier |
+| RGPD données enfants | Haut | Minimiser stockage (pas de prénom enfant), droit à l'effacement via commande `RESET` |
+| WhatsApp 24h window bloque les réponses | Moyen | Templates pré-approuvés pour cron |
+
+---
+
+*PRD généré 2026-04-14 — à réviser à chaque fin de phase.*
+*v1 (WhatsApp-only) préservée sous `PRD-v1-whatsapp.md`.*
