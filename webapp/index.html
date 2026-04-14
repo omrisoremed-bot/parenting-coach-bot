@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ParentEase — Connexion</title>
+  <link rel="stylesheet" href="/webapp/styles.css">
+</head>
+<body>
+  <main class="auth-shell">
+    <div class="card">
+      <h1>ParentEase</h1>
+      <p class="subtitle">Espace parent — connexion</p>
+
+      <!-- Step 1: phone -->
+      <form id="phone-form" class="step" data-step="phone">
+        <label for="phone">Ton numéro WhatsApp ou ID Telegram</label>
+        <input
+          id="phone"
+          name="phone"
+          type="text"
+          placeholder="+212612345678  ou  tg:123456789"
+          autocomplete="tel"
+          required>
+        <p class="hint">On t'enverra un code à 6 chiffres sur le canal où tu utilises déjà le bot.</p>
+        <button type="submit">Recevoir le code</button>
+        <p class="info">Tu n'as pas encore de compte ? Envoie <b>Bonjour</b> au bot (<a href="https://t.me/ParentEasebot" target="_blank" rel="noopener">Telegram</a>) — ton compte sera créé automatiquement.</p>
+      </form>
+
+      <!-- Step 2: code -->
+      <form id="code-form" class="step hidden" data-step="code">
+        <label for="code">Code reçu sur ton bot</label>
+        <input
+          id="code"
+          name="code"
+          type="text"
+          inputmode="numeric"
+          pattern="\d{6}"
+          maxlength="6"
+          placeholder="123456"
+          autocomplete="one-time-code"
+          required>
+        <p class="hint" id="code-hint">Valide 5 minutes.</p>
+        <button type="submit">Se connecter</button>
+        <button type="button" class="ghost" id="back-to-phone">← Changer de numéro</button>
+      </form>
+
+      <div id="error" class="error hidden"></div>
+    </div>
+  </main>
+
+  <script src="/webapp/app.js"></script>
+</body>
+</html>

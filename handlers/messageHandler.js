@@ -5,6 +5,7 @@ const { getState, setState, clearState } = require('../services/sessionManager')
 const { startOnboarding, handleOnboardingMessage } = require('./onboardingFlow');
 const { sendMessage } = require('../services/messengerAdapter');
 const { callAI, buildConversationPrompt, loadKnowledgeBase } = require('../services/aiService');
+const { logMessage } = require('../services/database');
 const logger = require('../services/logger');
 const fs = require('fs');
 const path = require('path');
@@ -112,8 +113,10 @@ async function messageHandler(phone, text) {
 
 async function handleConversation(phone, text, profile) {
   try {
+    logMessage(phone, 'user', text);
     const prompt = buildConversationPrompt(profile, text);
     const reply = await callAI(systemPrompt, prompt);
+    logMessage(phone, 'assistant', reply);
     await sendMessage(phone, reply);
   } catch (err) {
     logger.error('AI conversation error', { phone, error: err.message });

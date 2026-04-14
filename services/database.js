@@ -58,10 +58,43 @@ function getDb() {
     );
 
     CREATE INDEX IF NOT EXISTS idx_conv_phone ON conversation_history(phone);
+
+    -- ── Webapp auth ─────────────────────────────────────────────────────────
+    CREATE TABLE IF NOT EXISTS otp_codes (
+      phone       TEXT    NOT NULL,
+      code        TEXT    NOT NULL,
+      created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+      expires_at  TEXT    NOT NULL,
+      used        INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (phone, code)
+    );
+    CREATE INDEX IF NOT EXISTS idx_otp_phone ON otp_codes(phone);
+
+    CREATE TABLE IF NOT EXISTS sessions (
+      token       TEXT    PRIMARY KEY,
+      phone       TEXT    NOT NULL REFERENCES users(phone) ON DELETE CASCADE,
+      created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+      expires_at  TEXT    NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_sessions_phone ON sessions(phone);
   `);
 
   logger.info('SQLite database ready', { path: DB_PATH });
   return _db;
 }
 
-module.exports = { getDb, DB_PATH };
+/**
+ * Append a message to the conversation history (used by webapp to show recent exchanges).
+ * Never throws — logging must never break the bot flow.
+ */
+function logMessage(phone, role, content) {
+  try {
+    getDb()
+      .prepare(`INSERT INTO conversation_history (phone, role, content) VALUES (?, ?, ?)`)
+      .run(phone, role, content);
+  } catch (err) {
+    logger.warn('logMessage failed', { phone, error: err.message });
+  }
+}
+
+module.exports = { getDb, DB_PATH, logMessage };

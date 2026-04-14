@@ -213,6 +213,14 @@ if (process.env.TELEGRAM_BOT_TOKEN) {
 const adminRouter = require('./handlers/adminHandler');
 app.use('/admin', adminRouter);
 
+// ─── Webapp API (Phase 2) ────────────────────────────────────────────────────
+const webappApiRouter = require('./handlers/webappApi');
+app.use('/api', webappApiRouter);
+
+// ─── Webapp static files (Phase 2) ───────────────────────────────────────────
+const path = require('path');
+app.use('/webapp', express.static(path.join(__dirname, 'webapp')));
+
 // ─── Health check ────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', ts: new Date().toISOString() });

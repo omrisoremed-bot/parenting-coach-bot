@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ParentEase — Mon espace</title>
+  <link rel="stylesheet" href="/webapp/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="/webapp/dashboard.html" class="brand">ParentEase</a>
+      <nav>
+        <span id="user-name" class="muted">…</span>
+        <button id="logout" class="ghost">Déconnexion</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <section class="card">
+      <h2>Profil parent</h2>
+      <dl id="profile" class="kv"></dl>
+    </section>
+
+    <section class="card">
+      <h2>Enfant(s)</h2>
+      <div id="children" class="children"></div>
+    </section>
+
+    <section class="card">
+      <h2>Défis en cours</h2>
+      <ul id="challenges" class="tags"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Derniers bilans du soir</h2>
+      <ul id="checkins" class="checkins"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Historique récent (20)</h2>
+      <div id="history" class="history">
+        <p class="muted">Chargement…</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="/webapp/app.js"></script>
+</body>
+</html>
