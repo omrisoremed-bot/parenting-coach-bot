@@ -2,7 +2,7 @@
 
 const { loadProfile, updateProfile } = require('./profileLoader');
 const { setState, clearState } = require('../services/sessionManager');
-const { sendMessage } = require('../services/whatsappService');
+const { sendMessage } = require('../services/messengerAdapter');
 const { callAI, loadKnowledgeBase } = require('../services/aiService');
 const fs   = require('fs');
 const path = require('path');

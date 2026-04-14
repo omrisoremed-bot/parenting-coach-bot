@@ -2,7 +2,7 @@
 
 const cron = require('node-cron');
 const { getAllActiveUsers } = require('../handlers/profileLoader');
-const { sendMessage, sendTemplate, sleep } = require('../services/whatsappService');
+const { sendMessage, sendTemplate, sleep } = require('../services/messengerAdapter');
 const { callAI, buildMorningPrompt, loadKnowledgeBase } = require('../services/aiService');
 const logger = require('../services/logger');
 const fs = require('fs');

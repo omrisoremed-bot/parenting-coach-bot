@@ -129,7 +129,7 @@ function handleTwilioWebhook(body) {
 
 async function handleAudioMessage(from, mediaUrl) {
   const { loadProfile } = require('./handlers/profileLoader');
-  const { sendMessage } = require('./services/whatsappService');
+  const { sendMessage } = require('./services/messengerAdapter');
   const { transcribeAudio } = require('./services/transcriptionService');
 
   if (!process.env.GROQ_API_KEY) {
@@ -169,9 +169,44 @@ async function handleAudioMessage(from, mediaUrl) {
 
   } catch (err) {
     logger.error('Transcription failed', { from, error: err.message });
-    const { sendMessage: send } = require('./services/whatsappService');
+    const { sendMessage: send } = require('./services/messengerAdapter');
     await send(from, '🎤 Erreur lors de la transcription. Écris ton message en texte svp.');
   }
+}
+
+// ─── Telegram webhook (grammY) ──────────────────────────────────────────────
+if (process.env.TELEGRAM_BOT_TOKEN) {
+  const { webhookCallback } = require('grammy');
+  const { getBot } = require('./services/telegramService');
+  const { encodeTelegramUserId } = require('./services/messengerAdapter');
+  const tgBot = getBot();
+
+  // Handle text messages → route to messageHandler with "tg:<chat_id>" user ID
+  tgBot.on('message:text', async (ctx) => {
+    const chatId = ctx.chat.id;
+    const text = ctx.message.text;
+    const userId = encodeTelegramUserId(chatId);
+    logger.info('Incoming Telegram message', { userId, text: text.slice(0, 50) });
+    try {
+      await messageHandler(userId, text);
+    } catch (err) {
+      logger.error('Telegram messageHandler error', { userId, error: err.message });
+    }
+  });
+
+  // Log unsupported types for now (voice/photo → Phase 1.1)
+  tgBot.on('message', async (ctx) => {
+    if (ctx.message.text) return; // already handled above
+    logger.info('Non-text Telegram message ignored', {
+      chatId: ctx.chat.id,
+      type: Object.keys(ctx.message).find(k => k !== 'message_id' && k !== 'from' && k !== 'chat' && k !== 'date')
+    });
+  });
+
+  app.use('/webhook/telegram', webhookCallback(tgBot, 'express'));
+  logger.info('Telegram webhook route registered at /webhook/telegram');
+} else {
+  logger.info('TELEGRAM_BOT_TOKEN not set — Telegram integration disabled');
 }
 
 // ─── Admin endpoint — view / update user profiles ───────────────────────────

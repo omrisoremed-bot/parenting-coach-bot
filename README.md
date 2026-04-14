@@ -293,6 +293,27 @@ Users can send these messages at any time:
 
 ---
 
+## Telegram Bot (Phase 1 — optional second channel)
+
+The bot supports Telegram in parallel with WhatsApp using the same backend (profiles, AI, cron). To enable:
+
+1. Message **@BotFather** on Telegram → `/newbot` → choose a name → copy the token.
+2. Add to `.env`:
+   ```
+   TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
+   ```
+3. Restart the server. You should see `Telegram webhook route registered at /webhook/telegram` in the logs.
+4. Register the public webhook URL with Telegram (one-time, replace `<TOKEN>` and `<DOMAIN>`):
+   ```bash
+   curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
+     -d "url=https://<DOMAIN>/webhook/telegram"
+   ```
+5. Open your bot in Telegram and send `Bonjour` — onboarding flow starts.
+
+**Internal user ID format:** Telegram users are stored in the `users` table with `phone = "tg:<chat_id>"`. WhatsApp users keep their `+E.164` format. The `messengerAdapter` auto-routes outgoing messages based on the prefix, so no existing code needs to care about the channel.
+
+---
+
 ## Important WhatsApp Constraints
 
 - **24h window rule**: Meta only allows free-form messages within 24h of user's last message. For cron messages sent outside this window, use approved templates.

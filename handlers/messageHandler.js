@@ -3,7 +3,7 @@
 const { loadProfile, createProfile } = require('./profileLoader');
 const { getState, setState, clearState } = require('../services/sessionManager');
 const { startOnboarding, handleOnboardingMessage } = require('./onboardingFlow');
-const { sendMessage } = require('../services/whatsappService');
+const { sendMessage } = require('../services/messengerAdapter');
 const { callAI, buildConversationPrompt, loadKnowledgeBase } = require('../services/aiService');
 const logger = require('../services/logger');
 const fs = require('fs');

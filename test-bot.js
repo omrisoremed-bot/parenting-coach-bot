@@ -10,24 +10,29 @@ require('dotenv').config();
 const path = require('path');
 const fs   = require('fs');
 
-// ── Intercept whatsappService BEFORE any other module loads it ───────────────
+// ── Intercept messengerAdapter BEFORE any other module loads it ─────────────
 const sentMessages = [];
-require.cache[require.resolve('./services/whatsappService')] = {
-  id: require.resolve('./services/whatsappService'),
-  filename: require.resolve('./services/whatsappService'),
+const mockExports = {
+  sendMessage: async (to, text) => {
+    sentMessages.push({ to, text });
+    console.log('\n' + '─'.repeat(60));
+    console.log(`📱 BOT → ${to}`);
+    console.log('─'.repeat(60));
+    console.log(text);
+    console.log('─'.repeat(60));
+  },
+  sendTemplate: async () => {},
+  detectProvider: () => 'whatsapp',
+  encodeTelegramUserId: (id) => `tg:${id}`,
+  sleep: (ms) => new Promise(r => setTimeout(r, ms)),
+  TG_PREFIX: 'tg:'
+};
+
+require.cache[require.resolve('./services/messengerAdapter')] = {
+  id: require.resolve('./services/messengerAdapter'),
+  filename: require.resolve('./services/messengerAdapter'),
   loaded: true,
-  exports: {
-    sendMessage: async (to, text) => {
-      sentMessages.push({ to, text });
-      console.log('\n' + '─'.repeat(60));
-      console.log(`📱 BOT → ${to}`);
-      console.log('─'.repeat(60));
-      console.log(text);
-      console.log('─'.repeat(60));
-    },
-    sendTemplate: async () => {},
-    sleep: (ms) => new Promise(r => setTimeout(r, ms))
-  }
+  exports: mockExports
 };
 
 const messageHandler    = require('./handlers/messageHandler');
