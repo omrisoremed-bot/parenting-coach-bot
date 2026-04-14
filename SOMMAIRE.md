@@ -1,5 +1,5 @@
 # Sommaire — ParentEase (multi-canal)
-> Dernière mise à jour : 2026-04-14
+> Dernière mise à jour : 2026-04-14 (Phases 1–4 livrées en MVP)
 
 ## Description
 **ParentEase** est un coach parental IA multi-canal : bot WhatsApp en production, bot Telegram en préparation, webapp parent, blog SEO et moteur de contenu social. Tous les canaux partagent le même cerveau (profil, IA, base de connaissances) via une couche service mutualisée.
@@ -27,10 +27,11 @@
 |---|-----------|--------|--------------|
 | A | **Landing page** (5 langues) | ✅ Prod | `landing/` → GitHub Pages |
 | B | **Bot WhatsApp** | ✅ Prod | `bot.js`, `handlers/`, `services/` → Railway |
-| C | **Bot Telegram** | 📋 Phase 1 | `services/telegramService.js` *(à créer)* |
-| D | **Webapp parent** | 📋 Phase 2 | `webapp/` *(à créer)* |
-| E | **Blog CMS** | 🔄 Partiel | `landing/blog/*.html` → `webapp/src/content/blog/` |
-| F | **Moteur social** | 📋 Phase 4 | `scripts/article-to-social.js` *(à créer)* |
+| C | **Bot Telegram** | ✅ Prod (MVP) | `services/telegramService.js` + `messengerAdapter.js` → `@ParentEasebot` |
+| D | **Webapp parent** | ✅ MVP v1 | `webapp/` (vanilla JS) + `handlers/webappApi.js` — OTP login via bot |
+| E | **Blog CMS** | 🔄 Génération IA v1 | `scripts/generate-article.js` (LLM) → `landing/blog/drafts/` |
+| F | **Moteur social** | 📋 Phase 4b | `scripts/article-to-social.js` *(à créer)* |
+| G | **Knowledge base** | ✅ Enrichi | 8 fichiers `.md` + 6 PDFs académiques (auto-parsés via `npm run knowledge:build`) |
 
 ---
 
@@ -46,21 +47,36 @@
 | `handlers/onboardingFlow.js` | Onboarding multilingue 8 étapes |
 | `handlers/profileLoader.js` | Chargement/sauvegarde profils |
 | `handlers/adminHandler.js` | API REST admin |
-| `services/aiService.js` | Wrapper LLM (NVIDIA NIM Mistral / Claude) |
+| `services/aiService.js` | Wrapper LLM + `loadKnowledgeBase()` (md + PDF cache) |
 | `services/transcriptionService.js` | Transcription audio Groq Whisper |
 | `services/whatsappService.js` | Envoi messages Twilio + Meta Cloud API |
-| `services/database.js` | Accès SQLite (`better-sqlite3`) |
-| `services/sessionManager.js` | Sessions utilisateur |
+| `services/telegramService.js` | Wrapper grammY Telegram (**Phase 1**) |
+| `services/messengerAdapter.js` | Routage multi-canal par préfixe `tg:` (**Phase 1**) |
+| `services/database.js` | Accès SQLite — users + conversation_history + otp_codes + sessions |
+| `services/sessionManager.js` | Sessions utilisateur (bot, in-memory) |
 | `services/logger.js` | Winston logger |
+| `handlers/webappApi.js` | API REST webapp : OTP, sessions, /me, /history (**Phase 2**) |
 | `cron/index.js` | Init cron jobs |
 | `cron/morningPlan.js` | Plan matinal 08h00 |
 | `cron/eveningCheckin.js` | Check-in soir 21h00 |
 | `cron/weeklyReview.js` | Bilan dimanche 19h00 |
 | `agents/SOUL.md` | Méthodologie de coaching (injecté dans prompt) |
 | `agents/IDENTITY.md` | Personnalité du bot |
-| `knowledge/*.md` + `knowledge/*.pdf` | Base de connaissances |
+| `knowledge/*.md` | Base de connaissances éditoriale (8 fichiers) |
+| `knowledge/*.pdf` | 6 études académiques (parsées vers `.pdf-cache.md`) |
+| `knowledge/.pdf-cache.md` | Cache généré — *gitignored*, régénéré par postinstall |
 | `data/parenting_coach.db` | SQLite WAL |
 | `scripts/migrate-json-to-sqlite.js` | Migration historique |
+| `scripts/generate-article.js` | Générateur d'articles blog IA (**Phase 3**) |
+| `scripts/build-knowledge-cache.js` | Parse PDFs → markdown cache (**Phase 4**) |
+
+### Webapp parent (Phase 2)
+| Fichier | Rôle |
+|---------|------|
+| `webapp/index.html` | Login OTP (formulaire phone → code) |
+| `webapp/dashboard.html` | Dashboard profil + enfants + défis + bilans + historique |
+| `webapp/app.js` | Auth flow + appels API + rendering (vanilla JS) |
+| `webapp/styles.css` | Design tokens ParentEase, mobile-first |
 
 ### Landing page + blog
 | Fichier | Rôle |
@@ -94,10 +110,11 @@
 | Phase | Objectif | Statut |
 |-------|---------|--------|
 | **0** | WhatsApp bot prod + landing 5 langues + blog 6 articles | ✅ DONE |
-| **1** | **Bot Telegram MVP** (parité WhatsApp, réutilise 100% backend) | 📋 Prochaine |
-| **2** | Webapp parent (dashboard read-only, auth OTP via bot) | 📋 Planifiée |
-| **3** | Blog CMS Astro + génération d'articles IA + Decap CMS | 📋 Planifiée |
-| **4** | Moteur contenu social (writer/editor/visual agents → Postiz) | 📋 Planifiée |
+| **1** | Bot Telegram MVP (parité WhatsApp, réutilise 100% backend) | ✅ DONE (@ParentEasebot) |
+| **2** | Webapp parent (dashboard read-only, auth OTP via bot) | ✅ MVP v1 (vanilla JS) |
+| **3** | Génération d'articles IA | ✅ v1 (`npm run article`) — Astro+Decap à faire |
+| **4a** | Knowledge PDFs intégrés au prompt système | ✅ DONE (6 PDFs, 131K chars) |
+| **4b** | Moteur contenu social (writer/editor/visual agents → Postiz) | 📋 Planifiée |
 | **5** | Monétisation freemium + Mem0 + multi-enfants | 📋 Planifiée |
 
 ---
@@ -113,8 +130,9 @@
 | `GROQ_API_KEY` | Transcription audio | ⚠️ |
 | `ADMIN_TOKEN` | API admin | Recommandé |
 | `TIMEZONE` | Défaut `Africa/Casablanca` | Optionnel |
-| `TELEGRAM_BOT_TOKEN` | Phase 1 | 📋 À venir |
-| `LANGFUSE_SECRET_KEY` | Phase 2 | 📋 À venir |
+| `TELEGRAM_BOT_TOKEN` | Phase 1 — `@ParentEasebot` | ✅ Set |
+| `ARTICLE_MODEL` | Phase 3 — override modèle pour `generate-article.js` | Optionnel |
+| `LANGFUSE_SECRET_KEY` | Observabilité (Phase 5) | 📋 À venir |
 | `FAL_KEY` | Phase 4 | 📋 À venir |
 | `ELEVENLABS_API_KEY` | Phase 4 | 📋 À venir |
 | `POSTIZ_API_KEY` | Phase 4 | 📋 À venir |
@@ -136,6 +154,10 @@
 ## 🌐 URLs en production
 
 - **Bot WhatsApp (webhook) :** `https://parenting-coach-production-6c1b.up.railway.app/webhook`
+- **Bot Telegram (webhook) :** `https://parenting-coach-production-6c1b.up.railway.app/webhook/telegram`
+- **Bot Telegram (user-facing) :** https://t.me/ParentEasebot
+- **Webapp parent :** `https://parenting-coach-production-6c1b.up.railway.app/webapp/`
+- **API webapp :** `https://parenting-coach-production-6c1b.up.railway.app/api/`
 - **Health check :** `https://parenting-coach-production-6c1b.up.railway.app/health`
 - **Landing publique :** `https://omrisoremed-bot.github.io/parenting-coach-bot/`
 - **Landing EN :** `/en/`, **ES :** `/es/`, **PT :** `/pt/`, **AR :** `/ar/`
@@ -171,7 +193,29 @@ Voir `CLAUDE_SKILLS.md` pour le mapping détaillé. Priorités :
 ## ✅ Status global
 
 - **Phase 0** : ✅ Actif — bot WhatsApp en prod, landing déployée, blog live
-- **Phase 1** : 📋 Prochaine étape — bot Telegram MVP
-- **Phases 2–5** : Planifiées dans `PRD.md`
+- **Phase 1** : ✅ Livré — `@ParentEasebot` répond en prod via `messengerAdapter`
+- **Phase 2** : ✅ MVP v1 — webapp vanilla JS + OTP auth, `/webapp/` live sur Railway
+- **Phase 3** : ✅ v1 — `npm run article -- --topic "..."` génère un brouillon SEO dans `landing/blog/drafts/`
+- **Phase 4a** : ✅ Livré — 6 PDFs académiques parsés et injectés dans le system prompt (131K chars)
+- **Phase 4b (social)** : 📋 Planifiée — writer/editor/visual agents → Postiz
+- **Phase 5** : 📋 Planifiée — monétisation freemium + Mem0 + multi-enfants
 
-*À présenter à l'utilisateur pour validation avant de démarrer la Phase 1.*
+### Commandes utiles
+
+```bash
+# Lancer le bot en local
+npm run dev
+
+# Générer un article blog
+npm run article -- --topic "Gérer les crises du coucher chez les 3 ans" --author "Dr. Amina Benali"
+
+# Régénérer le cache knowledge base (après ajout d'un PDF)
+npm run knowledge:build
+```
+
+### TODO résiduel avant d'attaquer Phase 4b
+- [ ] **Révoquer le token Telegram exposé** dans le chat (`/revoke` sur @BotFather) puis remettre le nouveau sur Railway
+- [ ] Commandes Telegram natives (`/start`, `/help`, `/profil`, `/stop`)
+- [ ] Support notes vocales Telegram (file_id → Groq Whisper)
+- [ ] Version Astro de la webapp si besoin d'un vrai CMS/SSR
+- [ ] Pipeline de review SEO auto sur les drafts générés par `npm run article`

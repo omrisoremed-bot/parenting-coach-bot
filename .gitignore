@@ -8,3 +8,6 @@ logs/
 data/*.db
 data/*.db-shm
 data/*.db-wal
+
+# Knowledge cache — généré par scripts/build-knowledge-cache.js
+knowledge/.pdf-cache.md
