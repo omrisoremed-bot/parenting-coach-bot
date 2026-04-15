@@ -183,27 +183,50 @@ Utilise *texte* pour le gras WhatsApp. Pas de ## ou #.
 
 /**
  * Evening check-in (21:00 cron).
+ * Envoie uniquement les champs utiles au modèle — pas de weekly_checkins,
+ * session_state ni autres champs internes (minimisation des données).
  */
 function buildEveningPrompt(user) {
+  const safe = {
+    parent:           user.parent           || {},
+    children:         user.children         || [],
+    challenges:       user.challenges       || [],
+    parenting_style:  user.parenting_style  || '',
+    cultural_context: user.cultural_context || '',
+    language:         user.language         || 'fr'
+  };
   return `
-Lis ce profil utilisateur : ${JSON.stringify(user, null, 2)}
+Profil parent : ${JSON.stringify(safe, null, 2)}
 
 Génère le message de bilan du soir selon le format dans SOUL.md.
-Sois chaleureux, bref. Max 80 mots. Langue : ${user.language || 'fr'}.
+Sois chaleureux, bref. Max 80 mots. Langue : ${safe.language}.
 Termine avec les 4 questions numérotées du format.
   `.trim();
 }
 
 /**
  * Weekly review (Sunday 19:00 cron).
+ * Inclut les 3 derniers bilans pour personnaliser la semaine suivante,
+ * sans exposer l'historique complet au provider externe.
  */
 function buildWeeklyPrompt(user) {
+  const recentCheckins = (user.weekly_checkins || []).slice(-3);
+  const safe = {
+    parent:           user.parent           || {},
+    children:         user.children         || [],
+    challenges:       user.challenges       || [],
+    parenting_style:  user.parenting_style  || '',
+    cultural_context: user.cultural_context || '',
+    language:         user.language         || 'fr',
+    recent_checkins:  recentCheckins
+  };
   return `
-Lis ce profil utilisateur : ${JSON.stringify(user, null, 2)}
+Profil parent : ${JSON.stringify(safe, null, 2)}
 
 Génère le bilan hebdomadaire selon le format dans SOUL.md.
-Inclus 2-3 axes de focus pour la semaine à venir basés sur les défis déclarés.
-Max 200 mots. Langue : ${user.language || 'fr'}.
+Inclus 2-3 axes de focus pour la semaine à venir basés sur les défis déclarés
+et les bilans récents si disponibles.
+Max 200 mots. Langue : ${safe.language}.
   `.trim();
 }
 

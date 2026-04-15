@@ -11,3 +11,6 @@ data/*.db-wal
 
 # Knowledge cache — généré par scripts/build-knowledge-cache.js
 knowledge/.pdf-cache.md
+
+# Social content output — généré par npm run social (non versionné)
+landing/blog/social/

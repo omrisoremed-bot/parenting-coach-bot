@@ -1,7 +1,10 @@
 'use strict';
 
 require('dotenv').config();
+const crypto  = require('crypto');
 const express = require('express');
+const helmet  = require('helmet');
+const cors    = require('cors');
 const app = express();
 const logger = require('./services/logger');
 
@@ -11,7 +14,25 @@ require('./services/database').getDb();
 const messageHandler = require('./handlers/messageHandler');
 const { initCronJobs } = require('./cron');
 
-app.use(express.json());
+// ─── Sécurité HTTP ───────────────────────────────────────────────────────────
+// Helmet : headers de sécurité (XSS, clickjacking, MIME sniffing, HSTS…)
+app.use(helmet());
+
+// CORS : restreint /api à l'origine de la webapp (configurable via env)
+// WEBAPP_ORIGIN=https://ton-app.railway.app (ou false pour désactiver en prod strict)
+const webappOrigin = process.env.WEBAPP_ORIGIN || false;
+app.use('/api', cors({
+  origin: webappOrigin,
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// ─── Body parsers ────────────────────────────────────────────────────────────
+// Capture rawBody pour la vérification HMAC Meta
+app.use(express.json({
+  verify: (req, _res, buf) => { req.rawBody = buf; }
+}));
 app.use(express.urlencoded({ extended: true }));
 
 // ─── Track processed message IDs to deduplicate Meta webhooks ───────────────
@@ -24,6 +45,53 @@ function isDuplicate(messageId) {
   // Auto-clean after TTL to avoid unbounded memory growth
   setTimeout(() => processedIds.delete(messageId), DEDUP_TTL_MS);
   return false;
+}
+
+// ─── Vérification signatures webhook ────────────────────────────────────────
+
+/**
+ * Vérifie la signature X-Hub-Signature-256 envoyée par Meta.
+ * Utilise le rawBody capturé par express.json({ verify }) pour un HMAC exact.
+ * Si META_APP_SECRET n'est pas configuré, passe en mode permissif (dev only).
+ */
+function verifyMetaSignature(req) {
+  if (!process.env.META_APP_SECRET) {
+    logger.warn('META_APP_SECRET non configuré — vérification HMAC désactivée');
+    return true;
+  }
+  const sig = req.headers['x-hub-signature-256'] || '';
+  if (!sig) return false;
+
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', process.env.META_APP_SECRET)
+    .update(req.rawBody || '')
+    .digest('hex');
+
+  try {
+    // timingSafeEqual évite les timing attacks
+    return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Vérifie la signature X-Twilio-Signature envoyée par Twilio.
+ * Nécessite TWILIO_AUTH_TOKEN + TWILIO_WEBHOOK_URL (URL publique complète).
+ * Si TWILIO_WEBHOOK_URL n'est pas configuré, passe en mode permissif (dev only).
+ */
+function verifyTwilioSignature(req) {
+  if (!process.env.TWILIO_WEBHOOK_URL) {
+    logger.warn('TWILIO_WEBHOOK_URL non configuré — vérification signature Twilio désactivée');
+    return true;
+  }
+  const twilio = require('twilio');
+  return twilio.validateRequest(
+    process.env.TWILIO_AUTH_TOKEN,
+    req.headers['x-twilio-signature'] || '',
+    process.env.TWILIO_WEBHOOK_URL,
+    req.body
+  );
 }
 
 // ─── GET /webhook — Meta verification handshake ─────────────────────────────
@@ -42,12 +110,29 @@ app.get('/webhook', (req, res) => {
 
 // ─── POST /webhook — Incoming messages ──────────────────────────────────────
 app.post('/webhook', (req, res) => {
-  // Acknowledge immediately — Meta requires response within 5s
+  const provider = process.env.PROVIDER || 'meta';
+
+  // ── Vérification de signature AVANT tout traitement ──────────────────────
+  if (provider === 'twilio') {
+    if (!verifyTwilioSignature(req)) {
+      logger.warn('Twilio webhook signature invalide — requête rejetée', {
+        ip: req.ip
+      });
+      return res.sendStatus(403);
+    }
+  } else {
+    if (!verifyMetaSignature(req)) {
+      logger.warn('Meta webhook signature invalide — requête rejetée', {
+        ip: req.ip
+      });
+      return res.sendStatus(403);
+    }
+  }
+
+  // Acknowledge après vérification — Meta requiert une réponse sous 5s
   res.sendStatus(200);
 
   try {
-    const provider = process.env.PROVIDER || 'meta';
-
     if (provider === 'twilio') {
       handleTwilioWebhook(req.body);
     } else {

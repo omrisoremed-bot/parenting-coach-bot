@@ -48,6 +48,51 @@ _Dernière mise à jour : 2026-04-14 (Phases 1–4a livrées)_
 
 ---
 
+## ✅ Phase 4b — Moteur de contenu social (DONE — 2026-04-15)
+
+- [x] `scripts/article-to-social.js` — pipeline multi-agents : Writer → Editor → Visual Brief
+- [x] Agent 1 (Writer) : génère brouillons X (≤280 chars), Instagram (caption+hashtags), LinkedIn (~1000 chars)
+- [x] Agent 2 (Editor) : révise et améliore chaque post
+- [x] Agent 3 (Visual Brief) : génère un prompt Fal.ai/Flux pour l'image
+- [x] Fal.ai Flux Schnell intégré via REST API (axios) — actif si `FAL_API_KEY` défini, sinon ignoré
+- [x] Sortie dans `landing/blog/social/<date>-<slug>/` : `x.txt`, `instagram.txt`, `linkedin.txt`, `visual-prompt.txt`, `visual.png`
+- [x] `npm run social -- --input <fichier.md>` ajouté dans `package.json`
+- [x] `FAL_API_KEY` documenté dans `.env` et `.env.example`
+
+**Usage :**
+```bash
+npm run article -- --topic "Gérer les crises du coucher" --keyword "crise coucher enfant"
+npm run social -- --input landing/blog/drafts/2026-04-15-gerer-les-crises-du-coucher.md
+```
+
+**Postiz (publication) :** reporté — intégration self-hosted Railway trop complexe pour ce sprint.
+
+## ✅ Sprint 3 — Architecture + Performance (DONE — 2026-04-15)
+
+- [x] **M3** `services/promptBuilder.js` créé — singleton : SOUL.md (182K chars) chargé **1 fois** au lieu de 4 ; messageHandler + 3 crons en bénéficient via `require` cache Node.js
+- [x] **M5** `adminHandler.js` — `GET /admin/users` paginé (`?page=&limit=`, max 100/page), projection légère (sans colonnes JSON volumineuses), tri par `last_active DESC`
+- [x] **M6** 3 fichiers cron refactorisés — `Promise.allSettled` par batches de 5 en parallèle ; 100 users = ~10s au lieu de 50s+
+- [x] **M7** `adminHandler.js` — `express-rate-limit` : 20 req / 15 min par IP avant auth token (anti brute-force)
+
+## ✅ Sprint 2 — Sécurité + Qualité IA (DONE — 2026-04-15)
+
+- [x] **H3** `adminHandler.js` — Mass assignment corrigé : whitelist `ADMIN_EDITABLE_FIELDS`, retour 400 si aucun champ valide
+- [x] **M1** `aiService.js` — `buildEveningPrompt` + `buildWeeklyPrompt` : champs sélectifs uniquement (plus de `JSON.stringify(user)` complet envoyé à NVIDIA NIM)
+- [x] **M2** `bot.js` — `helmet()` global + CORS sur `/api` via `WEBAPP_ORIGIN` env var ; `npm install helmet cors`
+- [x] **M4** `messageHandler.js` — `handleConversation` relit les 6 derniers échanges de `conversation_history` avant chaque appel IA (la table existait déjà, câblage manquait)
+- [x] `.env` / `.env.example` — `WEBAPP_ORIGIN` documenté
+
+> ⚠️ Railway : ajouter `WEBAPP_ORIGIN=https://ton-app.railway.app`
+
+## ✅ Sprint 1 — Sécurité webhooks (DONE — 2026-04-14)
+
+- [x] **H1** `bot.js` — Vérification HMAC-SHA256 Meta (`X-Hub-Signature-256`) via `META_APP_SECRET`
+- [x] **H2** `bot.js` — Validation signature Twilio (`twilio.validateRequest()`) via `TWILIO_WEBHOOK_URL`
+- [x] **H4** `webappApi.js` — Fix `normalizePhone` : rejet des formats locaux (`0612...` → invalide), support `00XXXX` → `+XXXX`, message d'erreur actionnable
+- [x] `.env.example` — Ajout `META_APP_SECRET`, `TWILIO_WEBHOOK_URL`, `GROQ_API_KEY`, `SANDBOX_JOIN_CODE`
+
+> ⚠️ Action manuelle requise : `META_APP_SECRET` et `TWILIO_WEBHOOK_URL` à ajouter dans Railway
+
 ## 📋 Backlog (prochaines itérations)
 
 ### Phase 1.1 — Durcissement Telegram

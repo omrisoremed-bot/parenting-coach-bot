@@ -9,6 +9,7 @@
     "dev": "nodemon bot.js",
     "migrate": "node scripts/migrate-json-to-sqlite.js",
     "article": "node scripts/generate-article.js",
+    "social": "node scripts/article-to-social.js",
     "knowledge:build": "node scripts/build-knowledge-cache.js",
     "test": "node --test tests/"
   },
@@ -18,10 +19,13 @@
   "dependencies": {
     "axios": "^1.7.0",
     "better-sqlite3": "^12.8.0",
+    "cors": "^2.8.6",
     "dotenv": "^16.4.0",
     "express": "^4.19.0",
+    "express-rate-limit": "^8.3.2",
     "form-data": "^4.0.0",
     "grammy": "^1.42.0",
+    "helmet": "^8.1.0",
     "node-cron": "^3.0.3",
     "openai": "^4.104.0",
     "pdf-parse": "^2.4.5",

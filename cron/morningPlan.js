@@ -2,36 +2,54 @@
 
 const cron = require('node-cron');
 const { getAllActiveUsers } = require('../handlers/profileLoader');
-const { sendMessage, sendTemplate, sleep } = require('../services/messengerAdapter');
-const { callAI, buildMorningPrompt, loadKnowledgeBase } = require('../services/aiService');
+const { sendMessage } = require('../services/messengerAdapter');
+const { callAI, buildMorningPrompt } = require('../services/aiService');
+const { systemPrompt } = require('../services/promptBuilder');
 const logger = require('../services/logger');
-const fs = require('fs');
-const path = require('path');
 
-const soul = fs.readFileSync(path.join(__dirname, '..', 'agents', 'SOUL.md'), 'utf8');
-const systemPrompt = soul + loadKnowledgeBase();
+// ── Taille des batches parallèles ────────────────────────────────────────────
+// 5 appels IA en parallèle max — équilibre vitesse vs rate-limit NVIDIA NIM
+const BATCH_SIZE = 5;
 
+/**
+ * Envoie le plan du matin à un utilisateur individuel.
+ * Retourne une Promise — les erreurs sont catchées au niveau batch.
+ */
+async function sendMorningPlanToUser(user) {
+  const prompt  = buildMorningPrompt(user);
+  const message = await callAI(systemPrompt, prompt);
+  await sendMessage(user.phone, message);
+  logger.debug('Morning plan sent', { phone: user.phone });
+}
+
+/**
+ * Envoie les plans du matin à tous les utilisateurs actifs.
+ * Traitement par batches de BATCH_SIZE en parallèle pour éviter
+ * les délais excessifs à grande échelle (avant : 100 users = 50s+).
+ */
 async function sendMorningPlans() {
   logger.info('Morning plan cron started');
   const users = getAllActiveUsers();
   logger.info(`Sending morning plans to ${users.length} users`);
 
   let successCount = 0;
-  let errorCount = 0;
+  let errorCount   = 0;
 
-  for (const user of users) {
-    try {
-      const prompt = buildMorningPrompt(user);
-      const message = await callAI(systemPrompt, prompt);
-      await sendMessage(user.phone, message);
-      successCount++;
-    } catch (err) {
-      errorCount++;
-      logger.error('Morning plan send failed', { phone: user.phone, error: err.message });
+  for (let i = 0; i < users.length; i += BATCH_SIZE) {
+    const batch    = users.slice(i, i + BATCH_SIZE);
+    const outcomes = await Promise.allSettled(batch.map(sendMorningPlanToUser));
+
+    for (const [idx, outcome] of outcomes.entries()) {
+      if (outcome.status === 'fulfilled') {
+        successCount++;
+      } else {
+        errorCount++;
+        logger.error('Morning plan send failed', {
+          phone: batch[idx].phone,
+          error: outcome.reason?.message
+        });
+      }
     }
-
-    // Throttle: 500ms between users to respect API rate limits
-    await sleep(500);
   }
 
   logger.info('Morning plan cron completed', { successCount, errorCount });

@@ -2,40 +2,53 @@
 
 const cron = require('node-cron');
 const { getAllActiveUsers } = require('../handlers/profileLoader');
-const { sendMessage, sleep } = require('../services/messengerAdapter');
-const { callAI, buildEveningPrompt, loadKnowledgeBase } = require('../services/aiService');
+const { sendMessage } = require('../services/messengerAdapter');
+const { callAI, buildEveningPrompt } = require('../services/aiService');
+const { systemPrompt } = require('../services/promptBuilder');
 const { setState } = require('../services/sessionManager');
 const logger = require('../services/logger');
-const fs = require('fs');
-const path = require('path');
 
-const soul = fs.readFileSync(path.join(__dirname, '..', 'agents', 'SOUL.md'), 'utf8');
-const systemPrompt = soul + loadKnowledgeBase();
+const BATCH_SIZE = 5;
 
+/**
+ * Envoie le bilan du soir à un utilisateur et positionne son état
+ * en `awaiting_checkin_response` pour capter sa réponse.
+ */
+async function sendEveningCheckinToUser(user) {
+  const prompt  = buildEveningPrompt(user);
+  const message = await callAI(systemPrompt, prompt);
+  await sendMessage(user.phone, message);
+  setState(user.phone, { step: 'awaiting_checkin_response' });
+  logger.debug('Evening check-in sent', { phone: user.phone });
+}
+
+/**
+ * Envoie les bilans du soir à tous les utilisateurs actifs.
+ * Traitement par batches de BATCH_SIZE en parallèle.
+ */
 async function sendEveningCheckins() {
   logger.info('Evening check-in cron started');
   const users = getAllActiveUsers();
   logger.info(`Sending evening check-ins to ${users.length} users`);
 
   let successCount = 0;
-  let errorCount = 0;
+  let errorCount   = 0;
 
-  for (const user of users) {
-    try {
-      const prompt = buildEveningPrompt(user);
-      const message = await callAI(systemPrompt, prompt);
-      await sendMessage(user.phone, message);
+  for (let i = 0; i < users.length; i += BATCH_SIZE) {
+    const batch    = users.slice(i, i + BATCH_SIZE);
+    const outcomes = await Promise.allSettled(batch.map(sendEveningCheckinToUser));
 
-      // Set session state so the next message is treated as a check-in response
-      setState(user.phone, { step: 'awaiting_checkin_response' });
-
-      successCount++;
-    } catch (err) {
-      errorCount++;
-      logger.error('Evening check-in send failed', { phone: user.phone, error: err.message });
+    for (const [idx, outcome] of outcomes.entries()) {
+      if (outcome.status === 'fulfilled') {
+        successCount++;
+      } else {
+        errorCount++;
+        logger.error('Evening check-in send failed', {
+          phone: batch[idx].phone,
+          error: outcome.reason?.message
+        });
+      }
     }
-
-    await sleep(500);
   }
 
   logger.info('Evening check-in cron completed', { successCount, errorCount });

@@ -4,17 +4,10 @@ const { loadProfile, createProfile } = require('./profileLoader');
 const { getState, setState, clearState } = require('../services/sessionManager');
 const { startOnboarding, handleOnboardingMessage } = require('./onboardingFlow');
 const { sendMessage } = require('../services/messengerAdapter');
-const { callAI, buildConversationPrompt, loadKnowledgeBase } = require('../services/aiService');
-const { logMessage } = require('../services/database');
+const { callAI, buildConversationPrompt } = require('../services/aiService');
+const { systemPrompt } = require('../services/promptBuilder');
+const { logMessage, getDb } = require('../services/database');
 const logger = require('../services/logger');
-const fs = require('fs');
-const path = require('path');
-
-const soul = fs.readFileSync(path.join(__dirname, '..', 'agents', 'SOUL.md'), 'utf8');
-
-// Charge la base de connaissances une fois au démarrage
-const knowledgeBase = loadKnowledgeBase();
-const systemPrompt = soul + knowledgeBase;
 
 // ─── Commands ────────────────────────────────────────────────────────────────
 const COMMANDS = {
@@ -111,11 +104,34 @@ async function messageHandler(phone, text) {
   await handleConversation(phone, normalizedText, profile);
 }
 
+// Nombre de tours de conversation injectés dans le contexte IA (user + assistant)
+const HISTORY_TURNS = 6; // 6 paires = 12 messages max
+
 async function handleConversation(phone, text, profile) {
   try {
     logMessage(phone, 'user', text);
+
+    // ── Récupère les N derniers échanges pour donner du contexte à l'IA ──────
+    // La table conversation_history existe déjà (Phase 2) — on la relit ici.
+    let history = [];
+    try {
+      const rows = getDb()
+        .prepare(
+          `SELECT role, content FROM conversation_history
+           WHERE phone = ?
+           ORDER BY created_at DESC
+           LIMIT ?`
+        )
+        .all(phone, HISTORY_TURNS * 2)  // *2 car user + assistant par tour
+        .reverse();                      // Remettre dans l'ordre chronologique
+      history = rows.map(r => ({ role: r.role, content: r.content }));
+    } catch (histErr) {
+      // Ne jamais bloquer la conversation si l'historique échoue
+      logger.warn('history fetch failed — responding without context', { phone, error: histErr.message });
+    }
+
     const prompt = buildConversationPrompt(profile, text);
-    const reply = await callAI(systemPrompt, prompt);
+    const reply  = await callAI(systemPrompt, prompt, history);
     logMessage(phone, 'assistant', reply);
     await sendMessage(phone, reply);
   } catch (err) {

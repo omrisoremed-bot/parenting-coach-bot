@@ -46,11 +46,19 @@ function normalizePhone(raw) {
   if (typeof raw !== 'string') return null;
   const trimmed = raw.trim();
   if (!trimmed) return null;
-  // WhatsApp (E.164) ou Telegram (tg:<id>)
+
+  // Telegram IDs — format interne "tg:<chat_id>"
   if (trimmed.startsWith('tg:')) return trimmed;
-  // Auto-add + si l'utilisateur a tapé sans
-  if (/^\d{8,15}$/.test(trimmed)) return '+' + trimmed;
+
+  // WhatsApp — format E.164 strict avec "+" obligatoire
+  // On n'auto-complète PAS les numéros locaux (ex: 0612... → +0612... invalide)
+  // L'UI doit guider l'utilisateur vers le format +212XXXXXXXXX
   if (/^\+\d{8,15}$/.test(trimmed)) return trimmed;
+
+  // Tentative de normalisation basique : "00" → "+"
+  const via00 = trimmed.replace(/^00/, '+');
+  if (/^\+\d{8,15}$/.test(via00)) return via00;
+
   return null;
 }
 
@@ -91,7 +99,10 @@ function requireSession(req, res, next) {
 router.post('/auth/request-otp', async (req, res) => {
   const phone = normalizePhone(req.body?.phone);
   if (!phone) {
-    return res.status(400).json({ error: 'invalid_phone' });
+    return res.status(400).json({
+      error: 'invalid_phone',
+      message: 'Format invalide. Utilise le format international : +212XXXXXXXXX (WhatsApp) ou tg:<id> (Telegram).'
+    });
   }
 
   // Le user doit exister (on ne crée PAS de profil via la webapp — on s'inscrit d'abord sur le bot)
