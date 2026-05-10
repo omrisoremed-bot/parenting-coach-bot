@@ -307,8 +307,34 @@ const path = require('path');
 app.use('/webapp', express.static(path.join(__dirname, 'webapp')));
 
 // ─── Health check ────────────────────────────────────────────────────────────
+// UptimeRobot / Railway healthcheckPath polls this. 200 = healthy, 503 = degraded.
+// Includes DB ping to catch SQLite corruption / volume mount failures early.
+const { getDb } = require('./services/database');
+const pkg = require('./package.json');
+
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', ts: new Date().toISOString() });
+  const checks = { status: 'ok', db: 'ok' };
+  try {
+    const row = getDb().prepare('SELECT 1 AS ok').get();
+    if (row?.ok !== 1) throw new Error('DB ping returned unexpected row');
+  } catch (err) {
+    checks.status = 'degraded';
+    checks.db = 'down';
+    checks.error = err.message;
+    return res.status(503).json({
+      ...checks,
+      uptime:    Math.round(process.uptime()),
+      version:   pkg.version,
+      timestamp: new Date().toISOString(),
+    });
+  }
+  res.json({
+    ...checks,
+    uptime:    Math.round(process.uptime()),
+    version:   pkg.version,
+    name:      pkg.name,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // ─── Start server + cron jobs ────────────────────────────────────────────────
