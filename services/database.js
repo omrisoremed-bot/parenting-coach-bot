@@ -102,6 +102,15 @@ function getDb() {
       expires_at  TEXT    NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_sessions_phone ON sessions(phone);
+
+    -- ── Webhook deduplication (anti-replay) ─────────────────────────────────
+    -- Stores message IDs already processed. TTL 24h, cleaned daily by cron.
+    -- Survives bot restarts (vs. in-memory Set which loses state on redeploy).
+    CREATE TABLE IF NOT EXISTS processed_message_ids (
+      message_id   TEXT    PRIMARY KEY,
+      processed_at TEXT    NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_processed_at ON processed_message_ids(processed_at);
   `);
 
   logger.info('SQLite database ready', { path: DB_PATH });

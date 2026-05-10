@@ -35,15 +35,14 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: true }));
 
-// ─── Track processed message IDs to deduplicate Meta webhooks ───────────────
-const processedIds = new Set();
-const DEDUP_TTL_MS = 5 * 60 * 1000; // 5 minutes
+// ─── Webhook deduplication (persistent, survives restarts) ──────────────────
+// See services/messageDedup.js for impl + cron/index.js for daily cleanup.
+const { isAlreadyProcessed, markProcessed } = require('./services/messageDedup');
 
 function isDuplicate(messageId) {
-  if (processedIds.has(messageId)) return true;
-  processedIds.add(messageId);
-  // Auto-clean after TTL to avoid unbounded memory growth
-  setTimeout(() => processedIds.delete(messageId), DEDUP_TTL_MS);
+  if (!messageId) return false;
+  if (isAlreadyProcessed(messageId)) return true;
+  markProcessed(messageId);
   return false;
 }
 

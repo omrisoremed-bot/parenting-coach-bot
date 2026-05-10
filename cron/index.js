@@ -58,6 +58,19 @@ function initCronJobs() {
   } else {
     logger.info('Cron: key leak scan SKIPPED (GITHUB_PAT not set)');
   }
+
+  // ─── Daily webhook dedup cleanup (03:00 Casablanca) ────────────────────────
+  // Deletes processed_message_ids rows older than 24h (in-process, no subprocess)
+  cron.schedule('0 3 * * *', () => {
+    try {
+      const { cleanupOld } = require('../services/messageDedup');
+      const deleted = cleanupOld();
+      logger.info('Cron: webhook dedup cleanup done', { deleted });
+    } catch (err) {
+      logger.error('Cron: webhook dedup cleanup failed', { error: err.message });
+    }
+  }, { timezone: TZ });
+  logger.info('Cron: webhook dedup cleanup scheduled (03:00 daily)');
 }
 
 module.exports = { initCronJobs };
