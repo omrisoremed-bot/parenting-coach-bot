@@ -8,6 +8,7 @@
     "postinstall": "node scripts/build-knowledge-cache.js || echo 'knowledge cache build skipped'",
     "dev": "nodemon bot.js",
     "migrate": "node scripts/migrate-json-to-sqlite.js",
+    "db:migrate-volume": "node scripts/migrate-db-to-volume.js",
     "article": "node scripts/generate-article.js",
     "social": "node scripts/article-to-social.js",
     "weekly": "node scripts/weekly-content.js",

@@ -13,11 +13,36 @@ const fs   = require('fs');
 const Database = require('better-sqlite3');
 const logger = require('./logger');
 
-// Dossier data/ à la racine du projet (persiste sur Railway via volume ou en mémoire)
-const DATA_DIR = path.join(__dirname, '..', 'data');
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+// ─── DB path resolution ─────────────────────────────────────────────────────
+//   Production (Railway with volume) :  DB_PATH=/data/parenting_coach.db
+//   Local dev                         :  fallback to ./data/parenting_coach.db
+//
+// The Railway filesystem outside /data is EPHEMERAL — every deploy wipes it.
+// A persistent volume MUST be mounted at /data (configured in Railway dashboard).
+// See docs/ops/sqlite-persistence.md for the setup procedure.
+const LEGACY_DIR  = path.join(__dirname, '..', 'data');
+const LEGACY_PATH = path.join(LEGACY_DIR, 'parenting_coach.db');
+const DB_PATH     = process.env.DB_PATH || LEGACY_PATH;
 
-const DB_PATH = path.join(DATA_DIR, 'parenting_coach.db');
+const dbDir = path.dirname(DB_PATH);
+if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+
+// ─── One-time migration from legacy path to volume ──────────────────────────
+// Idempotent : runs only if DB_PATH points elsewhere AND target doesn't exist yet
+// AND legacy DB has data. Preserves WAL + SHM to avoid losing uncommitted writes.
+if (DB_PATH !== LEGACY_PATH && !fs.existsSync(DB_PATH) && fs.existsSync(LEGACY_PATH)) {
+  logger.info('Migrating SQLite from legacy path to persistent volume', {
+    from: LEGACY_PATH,
+    to:   DB_PATH
+  });
+  fs.copyFileSync(LEGACY_PATH, DB_PATH);
+  for (const suffix of ['-wal', '-shm']) {
+    if (fs.existsSync(LEGACY_PATH + suffix)) {
+      fs.copyFileSync(LEGACY_PATH + suffix, DB_PATH + suffix);
+    }
+  }
+  logger.info('SQLite migration complete');
+}
 
 let _db = null;
 
