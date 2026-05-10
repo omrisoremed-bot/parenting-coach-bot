@@ -1,0 +1,52 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, 'rebrand/**', 'hardening/**', 'claude/**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check entry points
+        run: |
+          node --check bot.js
+          node --check services/aiService.js
+          node --check services/database.js
+          node --check services/messageDedup.js
+          node --check handlers/messageHandler.js
+          node --check handlers/onboardingFlow.js
+          node --check handlers/webappApi.js
+          node --check cron/index.js
+
+      - name: Run smoke tests
+        run: npm test
+
+      - name: Verify rebrand integrity (no stray "ParentEase" references)
+        run: |
+          # Allow legitimate references: scripts/_rebrand-onetime.js (pattern definitions)
+          # and ANALYSE-COMPLETE-2026-05-10.md (historical context with competitor URLs)
+          ! grep -rn --include='*.js' --include='*.html' --include='*.json' \
+            -e 'ParentEase' -e 'parentease' \
+            --exclude-dir=node_modules \
+            --exclude-dir=.git \
+            --exclude='_rebrand-onetime.js' \
+            . \
+            | grep -v 'parentease\.app' \
+            | grep -v 'parentease\.ca' \
+            | grep -v '/docs/ANALYSE' \
+            | grep .
