@@ -1,0 +1,296 @@
+{
+  "author_id": "dr-amara-diallo",
+  "author_name": "Dr. Amara Diallo",
+  "author_profile": "docs/editorial/authors/dr-amara-diallo.md",
+  "cadence": "3 articles/semaine (Lundi · Mercredi · Vendredi)",
+  "weeks": [
+    {
+      "semaine": 1,
+      "theme": "Suivi pédiatrique & jalons 0–3 mois",
+      "articles": [
+        {
+          "topic": "Premiers mois avec bébé : ce que surveille votre pédiatre lors des visites 0–3 mois",
+          "keyword": "suivi pédiatrique nourrisson 0 à 3 mois",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["developpement-enfant", "attachement-personnalite"]
+        },
+        {
+          "topic": "Vaccination du nourrisson : calendrier complet, effets secondaires et questions fréquentes",
+          "keyword": "vaccination nourrisson calendrier effets",
+          "specialite": "Vaccination internationale",
+          "knowledge_refs": ["developpement-enfant"]
+        },
+        {
+          "topic": "Développement neurologique de 0 à 6 mois : les 7 signaux qui montrent que bébé progresse bien",
+          "keyword": "développement neurologique bébé 0 à 6 mois signaux",
+          "specialite": "Développement neurologique",
+          "knowledge_refs": ["developpement-enfant", "attachement-personnalite"]
+        }
+      ]
+    },
+    {
+      "semaine": 2,
+      "theme": "Signes d'alerte & stimulation cérébrale",
+      "articles": [
+        {
+          "topic": "Quand consulter un pédiatre ? Les 12 signes d'alerte chez le nourrisson que les parents doivent connaître",
+          "keyword": "signes alerte nourrisson pédiatre consultation",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["developpement-enfant"]
+        },
+        {
+          "topic": "Stimulation cérébrale du bébé : activités simples pour les 6 premiers mois",
+          "keyword": "stimulation bébé développement cerveau activités",
+          "specialite": "Développement neurologique",
+          "knowledge_refs": ["developpement-enfant", "attachement-personnalite"]
+        },
+        {
+          "topic": "Retard de développement chez l'enfant : comprendre, dépister et agir tôt",
+          "keyword": "retard développement enfant signes dépistage",
+          "specialite": "Développement neurologique",
+          "knowledge_refs": ["developpement-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 3,
+      "theme": "Médecine transculturelle & familles immigrantes",
+      "articles": [
+        {
+          "topic": "Médecine transculturelle : comment parler à votre pédiatre quand votre culture de santé est différente",
+          "keyword": "médecine transculturelle enfant famille immigrante pédiatre",
+          "specialite": "Médecine transculturelle",
+          "knowledge_refs": ["developpement-enfant", "styles-parentaux"]
+        },
+        {
+          "topic": "Vaccins et familles immigrantes : rattrapage vaccinal, équivalences internationales",
+          "keyword": "rattrapage vaccinal enfant immigrant équivalences",
+          "specialite": "Vaccination internationale",
+          "knowledge_refs": ["developpement-enfant"]
+        },
+        {
+          "topic": "Développement moteur de 0 à 18 mois : jalons normaux et quand s'inquiéter",
+          "keyword": "développement moteur bébé 0 à 18 mois jalons",
+          "specialite": "Développement neurologique",
+          "knowledge_refs": ["developpement-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 4,
+      "theme": "Nouveau-né & nutrition précoce",
+      "articles": [
+        {
+          "topic": "Peau à peau avec le nouveau-né : bienfaits prouvés et comment le pratiquer après la naissance",
+          "keyword": "peau à peau nouveau-né bienfaits pratique",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["attachement-personnalite", "developpement-enfant"]
+        },
+        {
+          "topic": "Alimentation du nourrisson 0–6 mois : allaitement, lait infantile et recommandations actuelles",
+          "keyword": "alimentation nourrisson 0 6 mois allaitement recommandations",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Coliques du nourrisson : causes réelles, durée normale et solutions prouvées pour les parents",
+          "keyword": "coliques nourrisson causes solutions durée",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["developpement-enfant", "sommeil-alimentation-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 5,
+      "theme": "Langage & bilinguisme",
+      "articles": [
+        {
+          "topic": "Jalons du langage de 0 à 3 ans : guide pratique pour suivre le développement de votre enfant",
+          "keyword": "jalons langage enfant 0 à 3 ans développement",
+          "specialite": "Développement neurologique",
+          "knowledge_refs": ["developpement-enfant"]
+        },
+        {
+          "topic": "Bilinguisme chez l'enfant : avantages cognitifs et comment élever un enfant bilingue sans stress",
+          "keyword": "bilinguisme enfant avantages cognitifs élever",
+          "specialite": "Médecine transculturelle",
+          "knowledge_refs": ["developpement-enfant"]
+        },
+        {
+          "topic": "Santé bucco-dentaire de l'enfant : premières dents, brossage et prévention des caries",
+          "keyword": "santé dentaire enfant premières dents brossage",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["developpement-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 6,
+      "theme": "Diversité familiale & santé inclusive",
+      "articles": [
+        {
+          "topic": "Familles multiculturelles et pédiatrie : concilier médecine traditionnelle et science moderne",
+          "keyword": "famille multiculturelle pédiatrie médecine traditionnelle moderne",
+          "specialite": "Médecine transculturelle",
+          "knowledge_refs": ["styles-parentaux", "developpement-enfant"]
+        },
+        {
+          "topic": "Anémie par carence en fer chez l'enfant : causes, symptômes et prévention alimentaire",
+          "keyword": "anémie enfant carence fer symptômes prévention",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Développement social et émotionnel de 0 à 3 ans : sourire, attachement et premiers jeux",
+          "keyword": "développement social émotionnel bébé 0 à 3 ans attachement",
+          "specialite": "Développement neurologique",
+          "knowledge_refs": ["attachement-personnalite", "developpement-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 7,
+      "theme": "Infections & urgences pédiatriques courantes",
+      "articles": [
+        {
+          "topic": "Fièvre chez le nourrisson : quand s'inquiéter, quand aller aux urgences et comment agir",
+          "keyword": "fièvre nourrisson urgences quand consulter",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["developpement-enfant"]
+        },
+        {
+          "topic": "Otites et rhinopharyngites récidivantes chez l'enfant : comprendre, traiter et prévenir",
+          "keyword": "otite rhinopharyngite enfant récidivante traitement prévention",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["developpement-enfant"]
+        },
+        {
+          "topic": "Obésité infantile dès les premiers mois : prévention précoce et rôle du pédiatre",
+          "keyword": "obésité infantile prévention précoce pédiatre",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 8,
+      "theme": "Neurodivergence & dépistage précoce",
+      "articles": [
+        {
+          "topic": "TDAH chez l'enfant : premiers signes dès la maternelle, diagnostic et accompagnement",
+          "keyword": "TDAH enfant premiers signes diagnostic maternelle",
+          "specialite": "Développement neurologique",
+          "knowledge_refs": ["developpement-enfant", "gestion-comportement-crises"]
+        },
+        {
+          "topic": "Spectre autistique : signes précoces à surveiller entre 12 et 24 mois",
+          "keyword": "autisme signes précoces enfant 12 24 mois dépistage",
+          "specialite": "Développement neurologique",
+          "knowledge_refs": ["developpement-enfant"]
+        },
+        {
+          "topic": "Portage bébé : avantages neurologiques, types de portage et sécurité",
+          "keyword": "portage bébé avantages neurologiques sécurité types",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["attachement-personnalite", "developpement-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 9,
+      "theme": "Prévention & immunité",
+      "articles": [
+        {
+          "topic": "Méningite chez l'enfant : symptômes d'urgence, vaccins disponibles et prévention",
+          "keyword": "méningite enfant symptômes urgence vaccins prévention",
+          "specialite": "Vaccination internationale",
+          "knowledge_refs": ["developpement-enfant"]
+        },
+        {
+          "topic": "Allergies pédiatriques : prévention par l'introduction précoce, ce que dit la science en 2024",
+          "keyword": "allergies enfant prévention introduction précoce science",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Attachement sécure et santé physique : ce que votre pédiatre sait que vous ignorez",
+          "keyword": "attachement sécure santé physique bébé pédiatre",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["attachement-personnalite", "developpement-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 10,
+      "theme": "Santé en voyage & allaitement",
+      "articles": [
+        {
+          "topic": "Santé de l'enfant en voyage international : vaccins, trousse de secours et alimentation à l'étranger",
+          "keyword": "santé enfant voyage international vaccins trousse",
+          "specialite": "Vaccination internationale",
+          "knowledge_refs": ["developpement-enfant"]
+        },
+        {
+          "topic": "Allaitement maternel : bienfaits prouvés, durée recommandée et retour au travail réussi",
+          "keyword": "allaitement maternel bienfaits durée retour travail",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "attachement-personnalite"]
+        },
+        {
+          "topic": "Développement cognitif 0–2 ans : comment le jeu construit l'intelligence de votre enfant",
+          "keyword": "développement cognitif bébé 0 à 2 ans jeu intelligence",
+          "specialite": "Développement neurologique",
+          "knowledge_refs": ["developpement-enfant", "attachement-personnalite"]
+        }
+      ]
+    },
+    {
+      "semaine": 11,
+      "theme": "Peau, écrans & sommeil — perspective médicale",
+      "articles": [
+        {
+          "topic": "Éruptions cutanées du nourrisson : lesquelles sont normales et lesquelles nécessitent une urgence",
+          "keyword": "éruption cutanée nourrisson bébé normale urgence",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["developpement-enfant"]
+        },
+        {
+          "topic": "Sommeil et développement neurologique : pourquoi les nuits construisent le cerveau de l'enfant",
+          "keyword": "sommeil développement neurologique enfant cerveau",
+          "specialite": "Développement neurologique",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "developpement-enfant"]
+        },
+        {
+          "topic": "Pédiatrie inclusive : comprendre les variations normales de développement selon les origines culturelles",
+          "keyword": "pédiatrie inclusive variations développement origines culturelles",
+          "specialite": "Médecine transculturelle",
+          "knowledge_refs": ["developpement-enfant", "styles-parentaux"]
+        }
+      ]
+    },
+    {
+      "semaine": 12,
+      "theme": "Guides complets & synthèses",
+      "articles": [
+        {
+          "topic": "Santé pédiatrique préventive de 0 à 6 ans : les 10 gestes essentiels que chaque parent devrait connaître",
+          "keyword": "santé pédiatrique préventive 0 à 6 ans gestes essentiels",
+          "specialite": "Santé du nourrisson",
+          "knowledge_refs": ["developpement-enfant", "attachement-personnalite", "sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Développement de l'enfant de la naissance à l'école : guide complet en 8 stades",
+          "keyword": "développement enfant naissance entrée école guide complet",
+          "specialite": "Développement neurologique",
+          "knowledge_refs": ["developpement-enfant", "attachement-personnalite"]
+        },
+        {
+          "topic": "Familles immigrantes et santé de l'enfant : droits, ressources et barrières à dépasser",
+          "keyword": "santé enfant famille immigrante droits ressources",
+          "specialite": "Médecine transculturelle",
+          "knowledge_refs": ["developpement-enfant", "styles-parentaux"]
+        }
+      ]
+    }
+  ]
+}

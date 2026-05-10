@@ -1,0 +1,296 @@
+{
+  "author_id": "etienne-bouchard",
+  "author_name": "Étienne Bouchard",
+  "author_profile": "docs/editorial/authors/etienne-bouchard.md",
+  "cadence": "3 articles/semaine (Lundi · Mercredi · Vendredi)",
+  "weeks": [
+    {
+      "semaine": 1,
+      "theme": "Bases du sommeil & méthodes douces",
+      "articles": [
+        {
+          "topic": "Méthode sans pleurs : guide complet pour apprendre à votre bébé à s'endormir seul",
+          "keyword": "méthode sans pleurs bébé s'endormir seul guide",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Régression du sommeil à 4 mois : pourquoi ça arrive et comment s'en sortir sans tout défaire",
+          "keyword": "régression sommeil 4 mois bébé causes solutions",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "developpement-enfant"]
+        },
+        {
+          "topic": "Routine du coucher de 0 à 3 ans : construire le rituel parfait selon l'âge de votre enfant",
+          "keyword": "routine coucher bébé enfant 0 à 3 ans rituel",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 2,
+      "theme": "Sommeil prématuré & environnement sécurisé",
+      "articles": [
+        {
+          "topic": "Sommeil du bébé prématuré : ce qui est vraiment normal après le retour à la maison",
+          "keyword": "sommeil bébé prématuré retour maison normal",
+          "specialite": "Sommeil prématuré",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "developpement-enfant"]
+        },
+        {
+          "topic": "Cododo sécurisé : conditions, risques réels et recommandations des pédiatres en 2024",
+          "keyword": "cododo sécurisé bébé conditions risques recommandations",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Environnement de sommeil sécurisé pour bébé : chambre, température, bruit et lumière",
+          "keyword": "environnement sommeil sécurisé bébé chambre température",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 3,
+      "theme": "Méthodes de sevrage nocturne comparées",
+      "articles": [
+        {
+          "topic": "Méthode Ferber : mode d'emploi complet, pour qui ça marche et comment l'appliquer",
+          "keyword": "méthode Ferber bébé sevrage nocturne mode d'emploi",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Fading (sevrage progressif) : la méthode douce pour les parents qui ne supportent pas les pleurs",
+          "keyword": "fading méthode douce sevrage sommeil bébé progressif",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Associations d'endormissement : comment aider bébé à s'endormir sans devenir son oreiller",
+          "keyword": "associations endormissement bébé s'endormir autonomie",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "attachement-personnalite"]
+        }
+      ]
+    },
+    {
+      "semaine": 4,
+      "theme": "Transitions & changements de contexte",
+      "articles": [
+        {
+          "topic": "Retour de la crèche : pourquoi votre enfant dort mal le soir et 5 solutions efficaces",
+          "keyword": "sommeil enfant après crèche transitions solutions soir",
+          "specialite": "Transitions crèche–maison",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "developpement-enfant"]
+        },
+        {
+          "topic": "Transition du lit à barreaux au lit enfant : timing, stratégie et gestion de la peur",
+          "keyword": "transition lit barreaux lit enfant timing stratégie",
+          "specialite": "Transitions crèche–maison",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Voyage et décalage horaire avec bébé : comment recaler le sommeil rapidement",
+          "keyword": "décalage horaire bébé voyage sommeil recaler",
+          "specialite": "Transitions crèche–maison",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 5,
+      "theme": "Régressions & terreurs nocturnes",
+      "articles": [
+        {
+          "topic": "Régression du sommeil à 18 mois : causes, durée réelle et stratégies de survie pour les parents",
+          "keyword": "régression sommeil 18 mois toddler causes durée",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "developpement-enfant"]
+        },
+        {
+          "topic": "Cauchemars vs terreurs nocturnes chez l'enfant : comprendre la différence et bien réagir",
+          "keyword": "cauchemars terreurs nocturnes enfant différence réaction",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "developpement-enfant"]
+        },
+        {
+          "topic": "Nuits agitées à 2 ans : crises au coucher, sorties de lit et comment reprendre le contrôle",
+          "keyword": "nuits agitées 2 ans enfant coucher crises solutions",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "gestion-comportement-crises"]
+        }
+      ]
+    },
+    {
+      "semaine": 6,
+      "theme": "Sommeil et neurodivergence (TDAH, TSA)",
+      "articles": [
+        {
+          "topic": "TDAH et troubles du sommeil chez l'enfant : le lien souvent ignoré et comment y remédier",
+          "keyword": "TDAH sommeil troubles enfant lien solutions",
+          "specialite": "Sommeil et TDAH",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "developpement-enfant", "gestion-comportement-crises"]
+        },
+        {
+          "topic": "Enfant hyperactif et coucher : pourquoi il résiste et 6 stratégies concrètes pour les parents",
+          "keyword": "enfant hyperactif sommeil coucher stratégies résistance",
+          "specialite": "Sommeil et TDAH",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "discipline-positive"]
+        },
+        {
+          "topic": "Mélatonine pour enfants : quand la donner, quelle dose, et les précautions essentielles",
+          "keyword": "mélatonine enfant dosage précautions quand donner",
+          "specialite": "Sommeil et TDAH",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 7,
+      "theme": "Nuits 0–6 mois & allaitement nocturne",
+      "articles": [
+        {
+          "topic": "Nuits de 0 à 3 mois avec un nouveau-né : ce qui est normal et ce qui ne l'est pas",
+          "keyword": "nuits bébé 0 à 3 mois nouveau-né normal",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "developpement-enfant"]
+        },
+        {
+          "topic": "Sevrage de l'allaitement nocturne : quand et comment le faire sans traumatiser bébé",
+          "keyword": "sevrage allaitement nocturne bébé quand comment",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "attachement-personnalite"]
+        },
+        {
+          "topic": "Siestes de bébé de 0 à 18 mois : horaires optimaux, durée et gestion à la maison",
+          "keyword": "siestes bébé 0 à 18 mois horaires durée gestion",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 8,
+      "theme": "Prématurité avancée — post-NICU",
+      "articles": [
+        {
+          "topic": "Grande prématurité et sommeil : ce que les parents doivent savoir sur les 6 premiers mois à la maison",
+          "keyword": "grande prématurité sommeil 6 premiers mois maison",
+          "specialite": "Sommeil prématuré",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "developpement-enfant"]
+        },
+        {
+          "topic": "Du NICU à la maison : comment reconstruire un rythme veille-sommeil après l'hôpital",
+          "keyword": "NICU retour maison rythme veille sommeil bébé prématuré",
+          "specialite": "Sommeil prématuré",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Moniteur de sommeil pour bébé prématuré : quand en utiliser un et lequel choisir",
+          "keyword": "moniteur sommeil bébé prématuré surveillance choisir",
+          "specialite": "Sommeil prématuré",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 9,
+      "theme": "Sommeil scolaire & écrans",
+      "articles": [
+        {
+          "topic": "Sommeil de l'enfant d'âge scolaire (6–12 ans) : le parent sous-estime souvent cette étape",
+          "keyword": "sommeil enfant âge scolaire 6 à 12 ans heures nécessaires",
+          "specialite": "Transitions crèche–maison",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "developpement-enfant"]
+        },
+        {
+          "topic": "Écrans et sommeil de l'enfant : comment vraiment déconnecter avant le coucher",
+          "keyword": "écrans sommeil enfant coucher déconnecter solutions",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Anxiété nocturne chez l'enfant : la peur du noir, les monstres et les solutions validées",
+          "keyword": "anxiété nocturne enfant peur nuit monstres solutions",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "attachement-personnalite"]
+        }
+      ]
+    },
+    {
+      "semaine": 10,
+      "theme": "Toddler & refus de coucher",
+      "articles": [
+        {
+          "topic": "Refus d'aller au lit à 3 ans : stratégies éprouvées pour un coucher sans bataille",
+          "keyword": "refus coucher 3 ans stratégies sans bataille",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "discipline-positive"]
+        },
+        {
+          "topic": "Réveil visuel (toddler clock) : comment un outil simple transforme les matins difficiles",
+          "keyword": "réveil visuel toddler clock enfant matins",
+          "specialite": "Transitions crèche–maison",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Partage de chambre entre frères et sœurs : gérer des rythmes de sommeil différents",
+          "keyword": "partage chambre enfants frères sœurs sommeil rythmes",
+          "specialite": "Transitions crèche–maison",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 11,
+      "theme": "Adolescent & décalage circadien",
+      "articles": [
+        {
+          "topic": "Adolescent et sommeil : le décalage circadien biologique que la plupart des parents ignorent",
+          "keyword": "adolescent sommeil décalage circadien biologique parents",
+          "specialite": "Transitions crèche–maison",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "developpement-enfant"]
+        },
+        {
+          "topic": "Smartphone dans la chambre de l'ado : effets prouvés sur le sommeil et alternatives pratiques",
+          "keyword": "smartphone chambre ado sommeil effets alternatives",
+          "specialite": "Sommeil et TDAH",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Sieste réparatrice chez l'enfant et l'ado : durée idéale, bon timing et astuces",
+          "keyword": "sieste réparatrice enfant ado durée timing",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        }
+      ]
+    },
+    {
+      "semaine": 12,
+      "theme": "Méthode Douce Nuit — guide & synthèses",
+      "articles": [
+        {
+          "topic": "Méthode Douce Nuit : le guide complet pour des nuits paisibles de 0 à 5 ans",
+          "keyword": "méthode douce nuit bébé guide complet 0 à 5 ans",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "attachement-personnalite"]
+        },
+        {
+          "topic": "Bébé qui ne fait pas ses nuits : les 7 erreurs courantes des parents (et comment les éviter)",
+          "keyword": "bébé ne fait pas ses nuits erreurs parents éviter",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant"]
+        },
+        {
+          "topic": "Sommeil de l'enfant de 0 à 12 ans : calendrier complet des besoins selon l'âge",
+          "keyword": "sommeil enfant 0 à 12 ans calendrier besoins âge",
+          "specialite": "Approche progressive sans pleurs",
+          "knowledge_refs": ["sommeil-alimentation-enfant", "developpement-enfant"]
+        }
+      ]
+    }
+  ]
+}

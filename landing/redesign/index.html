@@ -1,0 +1,1252 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ParentEase — le coach parental qui rend les soirs plus doux</title>
+<meta name="description" content="10 expert·es (pédiatres, psychologues, consultant·es sommeil) accompagnent ta parentalité chaque jour sur WhatsApp. Plans matinaux, jeux parent-enfant, bilans du soir." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
+
+<style>
+/* ─── reset ───────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:none;background:none}
+ul{list-style:none}
+
+/* ─── tokens ─────────────────────────────────────── */
+:root{
+  --sun:        #FFC93C;
+  --sun-deep:   #F5A623;
+  --coral:      #FF6B9D;
+  --coral-deep: #E84A7E;
+  --sky:        #4ECDC4;
+  --sky-deep:   #2DB6AC;
+  --mint:       #95E1D3;
+  --lav:        #B5A8FF;
+  --lav-deep:   #8C7BE6;
+  --orange:     #FF9F1C;
+  --cream:      #FFFAEC;
+  --cream-deep: #FFF1D6;
+  --paper:      #FFFFFF;
+  --ink:        #2D3047;
+  --ink-soft:   #5C5F7C;
+  --ink-faded:  #9799B5;
+
+  --display:  "Fredoka", "Nunito", system-ui, sans-serif;
+  --body:     "Nunito", system-ui, sans-serif;
+  --hand:     "Caveat", cursive;
+
+  --r-md: 18px;
+  --r-lg: 28px;
+  --r-xl: 40px;
+  --r-pill: 999px;
+
+  --shadow-sm: 0 4px 0 rgba(45,48,71,.12);
+  --shadow-md: 0 8px 0 rgba(45,48,71,.10), 0 16px 32px rgba(45,48,71,.08);
+  --shadow-pop: 0 10px 0 var(--ink);
+
+  --max:   1240px;
+  --gutter: clamp(1.1rem, 4vw, 2.4rem);
+}
+
+html{
+  background:var(--cream);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:17px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+body{overflow-x:hidden;position:relative}
+
+.wrap{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter);position:relative;z-index:2}
+
+h1,h2,h3,h4{font-family:var(--display);color:var(--ink);line-height:1.05;letter-spacing:-.01em}
+strong{font-weight:800;color:var(--ink)}
+
+/* ─── floating decorative shapes ─────────────────── */
+.deco{position:absolute;pointer-events:none;z-index:1}
+.deco svg{width:100%;height:100%;display:block}
+
+/* ─── NAV ────────────────────────────────────────── */
+.nav{
+  padding:1.4rem 0;position:sticky;top:0;z-index:50;
+  background:rgba(255,250,236,.85);backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand{display:flex;align-items:center;gap:.5rem;font-family:var(--display);font-weight:700;font-size:1.45rem}
+.brand-icon{
+  width:42px;height:42px;border-radius:14px;
+  background:linear-gradient(135deg,var(--sun) 0%,var(--coral) 50%,var(--sky) 100%);
+  display:grid;place-items:center;font-size:1.4rem;
+  box-shadow:0 4px 0 var(--ink);transform:rotate(-6deg);
+  transition:transform .3s ease;
+}
+.brand:hover .brand-icon{transform:rotate(8deg) scale(1.05)}
+.brand b{color:var(--ink)}
+.brand b em{font-style:normal;color:var(--coral-deep)}
+
+.nav-links{display:flex;gap:.5rem;align-items:center;font-family:var(--body);font-weight:600}
+.nav-links a{
+  padding:.55rem 1rem;border-radius:var(--r-pill);color:var(--ink-soft);
+  transition:all .2s ease;font-size:.95rem;
+}
+.nav-links a:hover{background:var(--paper);color:var(--ink);transform:translateY(-1px)}
+
+.btn{
+  font-family:var(--display);font-weight:600;letter-spacing:.01em;
+  padding:.85rem 1.5rem;border-radius:var(--r-pill);
+  display:inline-flex;align-items:center;gap:.55rem;
+  transition:transform .15s ease, box-shadow .15s ease;
+  white-space:nowrap;
+}
+.btn-primary{background:var(--ink);color:var(--cream);box-shadow:0 4px 0 #1a1c2e}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 0 #1a1c2e}
+.btn-primary:active{transform:translateY(2px);box-shadow:0 2px 0 #1a1c2e}
+
+.btn-sun{background:var(--sun);color:var(--ink);box-shadow:0 5px 0 var(--sun-deep)}
+.btn-sun:hover{transform:translateY(-2px);box-shadow:0 7px 0 var(--sun-deep)}
+.btn-sun:active{transform:translateY(2px);box-shadow:0 3px 0 var(--sun-deep)}
+
+.btn-coral{background:var(--coral);color:#fff;box-shadow:0 5px 0 var(--coral-deep)}
+.btn-coral:hover{transform:translateY(-2px);box-shadow:0 7px 0 var(--coral-deep)}
+
+.btn-ghost{background:var(--paper);color:var(--ink);border:2.5px solid var(--ink);box-shadow:0 4px 0 var(--ink)}
+.btn-ghost:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--ink);background:var(--cream)}
+
+.btn-arrow{
+  display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;
+  background:rgba(255,255,255,.25);transition:transform .2s ease;
+}
+.btn:hover .btn-arrow{transform:translateX(3px)}
+.btn-primary .btn-arrow{background:var(--coral)}
+
+/* ─── HERO ───────────────────────────────────────── */
+.hero{padding:3rem 0 6rem;position:relative;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:2.5rem;align-items:center}
+
+.hero-badge{
+  display:inline-flex;align-items:center;gap:.55rem;
+  background:var(--paper);border:2px solid var(--ink);
+  padding:.45rem 1rem;border-radius:var(--r-pill);
+  font-family:var(--body);font-weight:700;font-size:.85rem;
+  box-shadow:var(--shadow-sm);margin-bottom:1.6rem;
+}
+.hero-badge .pulse{
+  width:8px;height:8px;border-radius:50%;background:var(--coral);
+  box-shadow:0 0 0 0 var(--coral);animation:pulse 2s infinite;
+}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,107,157,.6)}70%{box-shadow:0 0 0 12px rgba(255,107,157,0)}100%{box-shadow:0 0 0 0 rgba(255,107,157,0)}}
+
+.hero h1{
+  font-size:clamp(2.8rem, 6.5vw, 5.2rem);
+  font-weight:600;line-height:1;margin-bottom:1.5rem;
+}
+.hero h1 .underline{position:relative;display:inline-block;color:var(--ink)}
+.hero h1 .underline::after{
+  content:"";position:absolute;left:-4px;right:-4px;bottom:.05em;height:.32em;
+  background:var(--sun);z-index:-1;border-radius:8px;transform:rotate(-1deg);
+}
+.hero h1 .scribble-w{
+  font-family:var(--hand);color:var(--coral-deep);font-weight:700;
+  font-size:1.2em;line-height:.7;display:inline-block;transform:rotate(-3deg);
+}
+
+.hero-lede{
+  font-size:1.15rem;color:var(--ink-soft);max-width:46ch;
+  line-height:1.6;margin-bottom:2rem;
+}
+.hero-cta{display:flex;gap:.9rem;flex-wrap:wrap;align-items:center;margin-bottom:2.5rem}
+.hero-tiny{
+  font-size:.85rem;color:var(--ink-faded);font-weight:600;
+  display:flex;align-items:center;gap:.5rem;
+}
+.hero-tiny svg{width:14px;height:14px;color:var(--sky-deep)}
+
+.hero-trust{
+  display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;
+  padding-top:1.4rem;border-top:2px dashed rgba(45,48,71,.12);
+}
+.hero-trust .face-stack{display:flex}
+.hero-trust .face{
+  width:38px;height:38px;border-radius:50%;border:3px solid var(--cream);
+  display:grid;place-items:center;font-size:1rem;
+  margin-left:-10px;font-family:var(--display);font-weight:700;
+}
+.hero-trust .face:first-child{margin-left:0}
+.hero-trust .face:nth-child(1){background:var(--coral);color:#fff}
+.hero-trust .face:nth-child(2){background:var(--sun);color:var(--ink)}
+.hero-trust .face:nth-child(3){background:var(--sky);color:#fff}
+.hero-trust .face:nth-child(4){background:var(--lav);color:#fff}
+.hero-trust .face:nth-child(5){background:var(--ink);color:var(--sun);font-size:.8rem}
+.hero-trust .stars{color:var(--sun-deep);font-size:1.1rem;letter-spacing:1px}
+.hero-trust b{color:var(--ink);font-weight:800}
+.hero-trust .small{font-size:.85rem;color:var(--ink-soft);line-height:1.3}
+
+/* hero illustration */
+.hero-art{position:relative;aspect-ratio:1/1;max-width:560px;justify-self:end;width:100%}
+.hero-art .blob{
+  position:absolute;inset:0;
+  background:radial-gradient(circle at 30% 30%, var(--sun) 0%, var(--sun) 30%, transparent 70%),
+             radial-gradient(circle at 70% 70%, var(--coral) 0%, transparent 60%),
+             radial-gradient(circle at 80% 30%, var(--sky) 0%, transparent 50%),
+             radial-gradient(circle at 20% 80%, var(--lav) 0%, transparent 55%);
+  filter:blur(40px);opacity:.7;
+}
+.hero-card{
+  position:absolute;background:var(--paper);
+  border:3px solid var(--ink);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-pop);padding:1.1rem 1.3rem;
+  font-family:var(--body);font-weight:600;
+}
+.hero-card.c1{
+  top:8%;left:-2%;width:62%;
+  transform:rotate(-4deg);background:var(--paper);
+  animation:float1 6s ease-in-out infinite;
+}
+.hero-card.c2{
+  top:36%;right:-4%;width:60%;
+  transform:rotate(3deg);background:var(--sun);
+  animation:float2 7s ease-in-out infinite;
+}
+.hero-card.c3{
+  bottom:6%;left:8%;width:62%;
+  transform:rotate(-2deg);background:var(--paper);
+  animation:float3 8s ease-in-out infinite;
+}
+@keyframes float1{0%,100%{transform:rotate(-4deg) translateY(0)}50%{transform:rotate(-4deg) translateY(-12px)}}
+@keyframes float2{0%,100%{transform:rotate(3deg) translateY(0)}50%{transform:rotate(3deg) translateY(-10px)}}
+@keyframes float3{0%,100%{transform:rotate(-2deg) translateY(0)}50%{transform:rotate(-2deg) translateY(-14px)}}
+
+.hero-card .who{
+  display:flex;align-items:center;gap:.7rem;margin-bottom:.6rem;
+}
+.hero-card .avatar{
+  width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  font-size:1.1rem;border:2px solid var(--ink);flex-shrink:0;
+}
+.hero-card .avatar.a{background:var(--coral);color:#fff}
+.hero-card .avatar.b{background:var(--ink);color:var(--sun)}
+.hero-card .avatar.c{background:var(--mint)}
+.hero-card .who b{font-size:.95rem;display:block}
+.hero-card .who small{font-size:.75rem;color:var(--ink-soft);font-weight:600}
+.hero-card p{font-size:.92rem;line-height:1.45;color:var(--ink-soft);font-weight:500}
+.hero-card .time{
+  font-size:.7rem;color:var(--ink-faded);font-weight:700;
+  margin-top:.5rem;display:block;letter-spacing:.05em;
+}
+.hero-card.c2 p,.hero-card.c2 .who small{color:var(--ink)}
+
+/* hero decorations */
+.deco-star{
+  position:absolute;font-family:var(--display);font-size:1.6rem;color:var(--orange);
+  animation:spin 12s linear infinite;
+}
+.deco-star.s1{top:5%;right:10%;animation-duration:10s}
+.deco-star.s2{bottom:8%;right:30%;animation-duration:14s;color:var(--sky-deep)}
+.deco-star.s3{top:30%;left:35%;color:var(--coral)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media (max-width:980px){
+  .hero{padding:2rem 0 4rem}
+  .hero .wrap{grid-template-columns:1fr;gap:3rem}
+  .hero-art{margin:0 auto}
+}
+
+/* ─── TICKER (logos clinics/orgs) ─────────────────── */
+.ticker-bar{
+  border-block:3px solid var(--ink);
+  background:var(--ink);overflow:hidden;
+}
+.ticker-track{
+  display:flex;gap:3.5rem;padding:1.1rem 0;white-space:nowrap;
+  animation:scroll 36s linear infinite;
+  font-family:var(--display);font-weight:600;color:var(--cream);font-size:1.05rem;
+}
+.ticker-track span{display:inline-flex;align-items:center;gap:1rem}
+.ticker-track .sep{color:var(--sun);font-size:1.4rem}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ─── HOW IT WORKS ──────────────────────────────── */
+.section{padding:6rem 0;position:relative}
+.section-head{text-align:center;max-width:700px;margin:0 auto 4rem}
+.kicker{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:var(--paper);border:2px solid var(--ink);
+  padding:.4rem 1rem;border-radius:var(--r-pill);
+  font-family:var(--display);font-size:.78rem;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;margin-bottom:1.2rem;box-shadow:var(--shadow-sm);
+}
+.kicker .dot{width:8px;height:8px;border-radius:50%;background:var(--coral)}
+.section h2{
+  font-size:clamp(2.2rem,4.5vw,3.6rem);font-weight:600;
+  margin-bottom:1rem;
+}
+.section h2 .marker{
+  background:var(--mint);padding:0 .25em;border-radius:8px;
+  display:inline-block;transform:rotate(-1deg);
+}
+.section-head p{font-size:1.1rem;color:var(--ink-soft);max-width:55ch;margin:0 auto}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem;position:relative}
+.step{
+  background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-xl);
+  padding:2.2rem 1.8rem;position:relative;
+  box-shadow:var(--shadow-pop);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.step:hover{transform:translateY(-4px);box-shadow:0 14px 0 var(--ink)}
+.step .num{
+  position:absolute;top:-22px;left:1.6rem;
+  width:48px;height:48px;border-radius:50%;
+  display:grid;place-items:center;
+  font-family:var(--display);font-weight:700;font-size:1.3rem;
+  border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);
+}
+.step:nth-child(1) .num{background:var(--sun)}
+.step:nth-child(2) .num{background:var(--coral);color:#fff}
+.step:nth-child(3) .num{background:var(--sky);color:#fff}
+
+.step .icon{
+  width:84px;height:84px;border-radius:24px;display:grid;place-items:center;
+  font-size:2.4rem;margin-bottom:1.4rem;border:2.5px solid var(--ink);
+}
+.step:nth-child(1) .icon{background:var(--sun)}
+.step:nth-child(2) .icon{background:var(--coral)}
+.step:nth-child(3) .icon{background:var(--sky)}
+
+.step h3{font-size:1.4rem;margin-bottom:.6rem}
+.step p{color:var(--ink-soft);font-size:1rem;line-height:1.55}
+.step .scribble{
+  font-family:var(--hand);color:var(--coral-deep);font-size:1.4rem;font-weight:700;
+  display:block;margin-top:.6rem;transform:rotate(-2deg);
+}
+
+@media (max-width:880px){.steps{grid-template-columns:1fr}}
+
+/* ─── FEATURES ─────────────────────────────────── */
+.section.features{background:var(--paper);position:relative}
+.section.features::before,.section.features::after{
+  content:"";position:absolute;inset-inline:0;height:60px;background:var(--cream);
+  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 60' preserveAspectRatio='none'><path d='M0 60 C 200 0, 400 60, 600 30 S 1000 0, 1200 30 L 1200 60 Z' fill='black'/></svg>") no-repeat center / 100% 100%;
+          mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 60' preserveAspectRatio='none'><path d='M0 60 C 200 0, 400 60, 600 30 S 1000 0, 1200 30 L 1200 60 Z' fill='black'/></svg>") no-repeat center / 100% 100%;
+}
+.section.features::before{top:0;transform:rotate(180deg)}
+.section.features::after{bottom:0}
+
+.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.4rem}
+.feat{
+  border:3px solid var(--ink);border-radius:var(--r-lg);
+  padding:1.8rem 1.5rem;position:relative;
+  box-shadow:var(--shadow-pop);
+  transition:transform .25s ease;
+}
+.feat:hover{transform:translateY(-6px) rotate(-1deg)}
+.feat:nth-child(1){background:var(--sun);transform:rotate(-1deg)}
+.feat:nth-child(2){background:var(--coral);color:#fff;transform:rotate(.5deg)}
+.feat:nth-child(2) p{color:rgba(255,255,255,.92)}
+.feat:nth-child(2) h3{color:#fff}
+.feat:nth-child(3){background:var(--sky);transform:rotate(-.5deg)}
+.feat:nth-child(4){background:var(--lav);color:#fff;transform:rotate(1deg)}
+.feat:nth-child(4) h3{color:#fff}
+.feat:nth-child(4) p{color:rgba(255,255,255,.92)}
+.feat:hover{transform:translateY(-6px) rotate(0)}
+
+.feat .glyph{
+  width:64px;height:64px;border-radius:18px;
+  background:var(--paper);border:2.5px solid var(--ink);
+  display:grid;place-items:center;font-size:1.8rem;margin-bottom:1.2rem;
+  box-shadow:0 4px 0 var(--ink);
+}
+.feat h3{font-size:1.25rem;margin-bottom:.5rem}
+.feat p{color:var(--ink-soft);font-size:.95rem;line-height:1.5;font-weight:500}
+
+@media (max-width:980px){.feat-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.feat-grid{grid-template-columns:1fr}}
+
+/* ─── AUTHORS ──────────────────────────────────── */
+.section.authors{background:linear-gradient(180deg,var(--cream) 0%, var(--cream-deep) 100%)}
+.author-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1.6rem;
+}
+.author{
+  background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-lg);
+  padding:1.6rem 1.4rem 1.4rem;position:relative;
+  box-shadow:var(--shadow-pop);
+  transition:transform .25s ease;
+}
+.author:hover{transform:translateY(-6px) rotate(1deg)}
+.author:nth-child(odd){transform:rotate(-1deg)}
+.author:nth-child(even){transform:rotate(.8deg)}
+
+.author .photo{
+  width:96px;height:96px;border-radius:50%;
+  border:3px solid var(--ink);margin:0 auto .9rem;
+  display:grid;place-items:center;font-size:2.2rem;
+  box-shadow:0 5px 0 var(--ink);
+}
+.author:nth-child(1) .photo{background:var(--sun)}
+.author:nth-child(2) .photo{background:var(--coral);color:#fff}
+.author:nth-child(3) .photo{background:var(--sky);color:#fff}
+.author:nth-child(4) .photo{background:var(--lav);color:#fff}
+.author:nth-child(5) .photo{background:var(--mint)}
+.author:nth-child(6) .photo{background:var(--orange);color:#fff}
+.author:nth-child(7) .photo{background:var(--coral);color:#fff}
+.author:nth-child(8) .photo{background:var(--sky);color:#fff}
+
+.author .flag{
+  position:absolute;top:1.2rem;right:1.2rem;font-size:1.5rem;
+  background:var(--cream);border:2px solid var(--ink);border-radius:50%;
+  width:34px;height:34px;display:grid;place-items:center;
+  box-shadow:0 3px 0 var(--ink);
+}
+.author .name{font-family:var(--display);font-weight:600;font-size:1.15rem;text-align:center;margin-bottom:.3rem}
+.author .role{font-size:.82rem;color:var(--ink-soft);text-align:center;line-height:1.4;margin-bottom:1rem;font-weight:600}
+.author .specs{display:flex;flex-wrap:wrap;gap:.35rem;justify-content:center}
+.author .spec{
+  font-size:.7rem;font-weight:700;background:var(--cream-deep);
+  padding:.2rem .6rem;border-radius:var(--r-pill);
+  border:1.5px solid var(--ink);
+}
+
+@media (max-width:980px){.author-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.author-grid{grid-template-columns:1fr}}
+
+/* ─── GAMES showcase ──────────────────────────── */
+.section.games{background:var(--ink);color:var(--cream);position:relative;overflow:hidden}
+.section.games::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 20% 30%, rgba(255,201,60,.15) 0%, transparent 40%),
+             radial-gradient(circle at 80% 70%, rgba(255,107,157,.15) 0%, transparent 40%);
+  z-index:0;
+}
+.section.games .wrap{position:relative;z-index:2}
+.section.games .section-head{margin-bottom:3rem}
+.section.games .kicker{background:rgba(255,255,255,.1);color:var(--cream);border-color:transparent}
+.section.games h2{color:var(--cream)}
+.section.games h2 .marker{color:var(--ink);background:var(--sun)}
+.section.games .section-head p{color:rgba(255,250,236,.75)}
+
+.games-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1.3rem;margin-bottom:2.5rem;
+}
+.game{
+  background:var(--paper);color:var(--ink);border:3px solid var(--ink);
+  border-radius:var(--r-lg);padding:1.4rem;position:relative;
+  box-shadow:0 8px 0 #000;
+  transition:transform .2s ease;
+}
+.game:hover{transform:translateY(-5px) rotate(-1deg)}
+
+.game .age{
+  position:absolute;top:-14px;right:1rem;
+  background:var(--sun);border:2.5px solid var(--ink);
+  padding:.2rem .6rem;border-radius:var(--r-pill);
+  font-family:var(--display);font-weight:600;font-size:.75rem;
+  box-shadow:0 3px 0 var(--ink);
+}
+.game .emoji{font-size:2.4rem;margin-bottom:.6rem;display:block}
+.game h4{font-size:1.05rem;margin-bottom:.5rem}
+.game p{font-size:.85rem;color:var(--ink-soft);line-height:1.45;margin-bottom:.8rem;font-weight:500}
+.game .meta{display:flex;gap:.4rem;flex-wrap:wrap}
+.game .tag{
+  font-size:.68rem;font-weight:700;background:var(--cream);
+  padding:.18rem .5rem;border-radius:var(--r-pill);
+  border:1.5px solid var(--ink);
+}
+.game .tag.energy-low{background:var(--mint)}
+.game .tag.energy-mid{background:var(--sun)}
+.game .tag.energy-high{background:var(--coral);color:#fff}
+
+.games-foot{text-align:center}
+.games-foot .scribble{
+  font-family:var(--hand);font-size:1.6rem;color:var(--sun);
+  display:block;margin-bottom:1rem;font-weight:700;
+}
+
+@media (max-width:980px){.games-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.games-grid{grid-template-columns:1fr}}
+
+/* ─── TESTIMONIALS ─────────────────────────────── */
+.section.testimonials{background:var(--paper)}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem}
+.testi{
+  background:var(--cream);border:3px solid var(--ink);
+  border-radius:var(--r-lg);padding:1.8rem 1.6rem;
+  box-shadow:var(--shadow-pop);position:relative;
+}
+.testi:nth-child(1){background:var(--sun);transform:rotate(-1deg)}
+.testi:nth-child(2){background:var(--coral);color:#fff;transform:rotate(.5deg)}
+.testi:nth-child(3){background:var(--sky);transform:rotate(-.5deg)}
+.testi:hover{transform:translateY(-4px) rotate(0)}
+.testi .quote{
+  position:absolute;top:-22px;left:1.5rem;
+  width:50px;height:50px;border-radius:50%;
+  background:var(--paper);border:2.5px solid var(--ink);
+  display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:2rem;line-height:1;
+  box-shadow:0 4px 0 var(--ink);color:var(--coral-deep);
+}
+.testi .stars{color:var(--ink);font-size:1rem;letter-spacing:2px;margin:.6rem 0 1rem}
+.testi:nth-child(2) .stars{color:#fff}
+.testi p{font-size:1rem;line-height:1.55;font-weight:600;margin-bottom:1.2rem}
+.testi:nth-child(2) p{color:#fff}
+.testi .person{display:flex;align-items:center;gap:.7rem}
+.testi .ava{
+  width:42px;height:42px;border-radius:50%;border:2.5px solid var(--ink);
+  display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:1.1rem;
+  background:var(--paper);
+}
+.testi .person b{display:block;font-family:var(--display);font-weight:600;font-size:.95rem}
+.testi .person small{font-size:.78rem;color:var(--ink-soft);font-weight:600}
+.testi:nth-child(2) .person small{color:rgba(255,255,255,.8)}
+
+@media (max-width:980px){.testi-grid{grid-template-columns:1fr}}
+
+/* ─── PRICING ──────────────────────────────────── */
+.section.pricing{background:linear-gradient(180deg,var(--cream-deep) 0%,var(--cream) 100%)}
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem;align-items:start}
+.price-card{
+  background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-xl);
+  padding:2rem 1.8rem;position:relative;
+  box-shadow:var(--shadow-pop);
+  transition:transform .25s ease;
+}
+.price-card:hover{transform:translateY(-6px)}
+.price-card.popular{
+  background:linear-gradient(180deg,var(--sun) 0%, var(--cream) 60%);
+  transform:scale(1.04);
+}
+.price-card.popular:hover{transform:scale(1.04) translateY(-6px)}
+.price-card.popular::before{
+  content:"⭐ Le plus aimé";
+  position:absolute;top:-18px;left:50%;transform:translateX(-50%) rotate(-3deg);
+  background:var(--coral);color:#fff;padding:.45rem 1rem;
+  border:2.5px solid var(--ink);border-radius:var(--r-pill);
+  font-family:var(--display);font-weight:600;font-size:.85rem;
+  box-shadow:0 4px 0 var(--ink);white-space:nowrap;
+}
+.price-card .pname{font-family:var(--display);font-weight:700;font-size:1.5rem;margin-bottom:.4rem}
+.price-card .pblurb{color:var(--ink-soft);font-size:.95rem;margin-bottom:1.4rem;font-weight:600}
+.price-card .price{font-family:var(--display);font-weight:700;font-size:3rem;line-height:1;margin-bottom:.3rem}
+.price-card .price small{font-size:1rem;color:var(--ink-soft);font-weight:600}
+.price-card .perio{font-size:.8rem;color:var(--ink-faded);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:1.6rem}
+.price-card ul{border-top:2px dashed rgba(45,48,71,.15);padding-top:1.2rem;margin-bottom:1.6rem}
+.price-card li{
+  display:flex;gap:.6rem;padding:.45rem 0;font-size:.95rem;font-weight:600;line-height:1.4;
+}
+.price-card li::before{
+  content:"✓";color:var(--coral-deep);font-weight:800;flex-shrink:0;
+  background:var(--mint);width:22px;height:22px;border-radius:50%;
+  display:grid;place-items:center;border:1.5px solid var(--ink);font-size:.75rem;
+}
+.price-card .pcta{display:block;text-align:center;width:100%;justify-content:center}
+
+@media (max-width:980px){
+  .price-grid{grid-template-columns:1fr;gap:2rem}
+  .price-card.popular{transform:scale(1)}
+  .price-card.popular:hover{transform:translateY(-6px)}
+}
+
+/* ─── FAQ ──────────────────────────────────────── */
+.section.faq{background:var(--paper)}
+.faq-list{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:1rem}
+.faq-item{
+  background:var(--cream);border:3px solid var(--ink);border-radius:var(--r-lg);
+  padding:1.2rem 1.5rem;box-shadow:0 5px 0 var(--ink);
+}
+.faq-item summary{
+  font-family:var(--display);font-weight:600;font-size:1.1rem;
+  cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem;
+}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{
+  content:"+";font-size:1.8rem;font-family:var(--display);font-weight:600;
+  width:32px;height:32px;border-radius:50%;background:var(--sun);
+  border:2px solid var(--ink);display:grid;place-items:center;
+  flex-shrink:0;transition:transform .2s ease;line-height:1;padding-bottom:3px;
+}
+.faq-item[open] summary::after{transform:rotate(45deg);background:var(--coral);color:#fff}
+.faq-item p{color:var(--ink-soft);margin-top:.9rem;line-height:1.6;font-size:1rem;font-weight:500}
+
+/* ─── FINAL CTA ────────────────────────────────── */
+.cta-final{
+  background:linear-gradient(135deg,var(--coral) 0%,var(--orange) 50%,var(--sun) 100%);
+  padding:5rem 0;border-block:3px solid var(--ink);
+  position:relative;overflow:hidden;text-align:center;
+}
+.cta-final::before{
+  content:"";position:absolute;inset:0;
+  background-image:radial-gradient(circle at 20% 50%, rgba(255,255,255,.3) 0%, transparent 30%),
+                   radial-gradient(circle at 80% 50%, rgba(255,255,255,.25) 0%, transparent 30%);
+}
+.cta-final .wrap{position:relative;z-index:2;max-width:680px}
+.cta-final h2{
+  font-size:clamp(2.2rem,5vw,3.6rem);font-weight:600;margin-bottom:1rem;color:var(--ink);
+}
+.cta-final h2 .scribble{font-family:var(--hand);font-weight:700;color:#fff;display:inline-block;transform:rotate(-2deg);font-size:1em}
+.cta-final p{font-size:1.15rem;color:var(--ink);margin-bottom:2rem;font-weight:600;max-width:46ch;margin-inline:auto}
+.cta-final .buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+
+/* ─── FOOTER ───────────────────────────────────── */
+footer{background:var(--ink);color:var(--cream);padding:4rem 0 2rem}
+.foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:2.5rem;margin-bottom:3rem}
+.foot-grid .brand{color:var(--cream);font-size:1.6rem;margin-bottom:1rem}
+.foot-grid .brand b{color:var(--cream)}
+.foot-grid p{color:rgba(255,250,236,.7);font-size:.95rem;line-height:1.6;max-width:34ch;margin-bottom:1.4rem}
+.foot-socials{display:flex;gap:.6rem}
+.foot-socials a{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,250,236,.1);transition:all .2s ease;font-size:1.1rem;
+}
+.foot-socials a:hover{background:var(--sun);color:var(--ink);transform:translateY(-2px)}
+.foot-grid h4{
+  color:var(--cream);font-family:var(--display);font-weight:600;font-size:.95rem;
+  letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem;
+}
+.foot-grid a:not(.foot-socials a){
+  display:block;color:rgba(255,250,236,.7);padding:.3rem 0;
+  font-size:.95rem;transition:color .15s ease;
+}
+.foot-grid a:not(.foot-socials a):hover{color:var(--sun)}
+
+.foot-bot{
+  border-top:1px solid rgba(255,250,236,.15);padding-top:1.4rem;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+  font-size:.85rem;color:rgba(255,250,236,.5);
+}
+
+@media (max-width:880px){.foot-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.foot-grid{grid-template-columns:1fr}}
+
+/* ─── decorative blobs (background) ──────────────── */
+.bg-blob{
+  position:absolute;border-radius:50%;filter:blur(80px);opacity:.35;z-index:0;
+  pointer-events:none;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ─── NAV ─────────────────────────────────────── -->
+<header class="nav">
+  <div class="wrap">
+    <a href="/" class="brand">
+      <div class="brand-icon">🌈</div>
+      <b>Parent<em>Ease</em></b>
+    </a>
+    <nav class="nav-links" aria-label="Principal">
+      <a href="#comment">Comment ça marche</a>
+      <a href="#auteurs">Nos expert·es</a>
+      <a href="#jeux">Jeux</a>
+      <a href="#offres">Tarifs</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a href="#cta" class="btn btn-primary">
+      Démarrer gratuitement
+      <span class="btn-arrow">→</span>
+    </a>
+  </div>
+</header>
+
+<!-- ─── HERO ────────────────────────────────────── -->
+<section class="hero">
+  <div class="bg-blob" style="top:-100px;left:-200px;width:500px;height:500px;background:var(--sun)"></div>
+  <div class="bg-blob" style="bottom:-150px;right:-150px;width:600px;height:600px;background:var(--coral)"></div>
+
+  <div class="wrap">
+    <div>
+      <div class="hero-badge">
+        <span class="pulse"></span>
+        Disponible sur WhatsApp · Telegram
+      </div>
+
+      <h1>
+        Le coach parental<br/>
+        qui rend les <span class="underline">soirs plus doux</span>.<br/>
+        <span class="scribble-w">Tous les jours.</span>
+      </h1>
+
+      <p class="hero-lede">
+        10 expert·es (pédiatres, psychologues, consultant·es sommeil) répondent à tes questions et t'envoient un plan adapté chaque matin. Pas une appli de plus à télécharger — juste WhatsApp, comme une amie qui sait.
+      </p>
+
+      <div class="hero-cta">
+        <a href="#cta" class="btn btn-coral">
+          Essayer gratuitement
+          <span class="btn-arrow">→</span>
+        </a>
+        <a href="#comment" class="btn btn-ghost">
+          Voir comment ça marche
+        </a>
+      </div>
+
+      <p class="hero-tiny">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+        Pas de carte bancaire · Annulable en 1 clic · 100% RGPD
+      </p>
+
+      <div class="hero-trust" style="margin-top:2rem">
+        <div class="face-stack" aria-hidden="true">
+          <span class="face">🩺</span>
+          <span class="face">🧠</span>
+          <span class="face">😴</span>
+          <span class="face">🥗</span>
+          <span class="face">+6</span>
+        </div>
+        <div>
+          <div class="stars">★★★★★</div>
+          <div class="small"><b>3 200 familles</b> accompagnées<br/>dans 18 pays</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HERO ART -->
+    <div class="hero-art" aria-hidden="true">
+      <div class="blob"></div>
+
+      <span class="deco-star s1">✦</span>
+      <span class="deco-star s2">✸</span>
+      <span class="deco-star s3">✺</span>
+
+      <div class="hero-card c1">
+        <div class="who">
+          <div class="avatar a">A</div>
+          <div>
+            <b>Aïcha · maman de Lina (3 ans)</b>
+            <small>aujourd'hui · 19h42</small>
+          </div>
+        </div>
+        <p>« Lina refuse d'aller au lit ce soir, elle pleure. J'en peux plus. »</p>
+        <span class="time">📩 Vu</span>
+      </div>
+
+      <div class="hero-card c2">
+        <div class="who">
+          <div class="avatar b">P</div>
+          <div>
+            <b>ParentEase · 19h42</b>
+            <small>Étienne Bouchard · Sommeil</small>
+          </div>
+        </div>
+        <p><strong>Pose-toi à côté de son lit, sans rien dire.</strong> 3 minutes. Sa colère a besoin d'un témoin avant d'avoir besoin d'une solution.</p>
+      </div>
+
+      <div class="hero-card c3">
+        <div class="who">
+          <div class="avatar c">L</div>
+          <div>
+            <b>Lina · 20h14</b>
+            <small>endormie 🌙</small>
+          </div>
+        </div>
+        <p>« Maman… reste encore un peu. »</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TICKER ─────────────────────────────────── -->
+<div class="ticker-bar" aria-hidden="true">
+  <div class="ticker-track">
+    <span>🩺 CHU Sainte-Justine</span><span class="sep">✦</span>
+    <span>🏥 Johns Hopkins</span><span class="sep">✦</span>
+    <span>🧠 INSERM</span><span class="sep">✦</span>
+    <span>🌍 OMS Genève</span><span class="sep">✦</span>
+    <span>🎓 King's College London</span><span class="sep">✦</span>
+    <span>🍼 Karolinska Institutet</span><span class="sep">✦</span>
+    <span>🔬 EFSA Bruxelles</span><span class="sep">✦</span>
+    <span>📚 Penguin Random House</span><span class="sep">✦</span>
+    <!-- duplicate for seamless loop -->
+    <span>🩺 CHU Sainte-Justine</span><span class="sep">✦</span>
+    <span>🏥 Johns Hopkins</span><span class="sep">✦</span>
+    <span>🧠 INSERM</span><span class="sep">✦</span>
+    <span>🌍 OMS Genève</span><span class="sep">✦</span>
+    <span>🎓 King's College London</span><span class="sep">✦</span>
+    <span>🍼 Karolinska Institutet</span><span class="sep">✦</span>
+    <span>🔬 EFSA Bruxelles</span><span class="sep">✦</span>
+    <span>📚 Penguin Random House</span><span class="sep">✦</span>
+  </div>
+</div>
+
+<!-- ─── HOW IT WORKS ─────────────────────────────── -->
+<section class="section" id="comment">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker"><span class="dot"></span> 3 étapes</span>
+      <h2>Une vraie aide en <span class="marker">2 minutes</span> chrono.</h2>
+      <p>Pas de compte à créer. Pas d'application à télécharger. On répond où tu es déjà : sur WhatsApp.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <div class="icon">💬</div>
+        <h3>Écris à notre numéro WhatsApp</h3>
+        <p>Tu envoies « Bonjour ». On te pose 3 questions pour comprendre ton enfant : âge, défi du moment, contexte familial.</p>
+        <span class="scribble">— oui, c'est tout —</span>
+      </div>
+
+      <div class="step">
+        <div class="num">2</div>
+        <div class="icon">🌅</div>
+        <h3>Reçois ton plan chaque matin</h3>
+        <p>À 8h00, un message court : focus du jour, activité 5 min, astuce communication. Adapté à TON enfant, pas à une moyenne.</p>
+        <span class="scribble">— ultra personnalisé —</span>
+      </div>
+
+      <div class="step">
+        <div class="num">3</div>
+        <div class="icon">🤍</div>
+        <h3>Pose tes questions, à toute heure</h3>
+        <p>Crise de coucher à 22h ? Refus de manger à midi ? Tu écris, on répond en moins de 6 secondes avec la voix d'un·e vrai·e expert·e.</p>
+        <span class="scribble">— sans jugement, jamais —</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FEATURES ─────────────────────────────────── -->
+<section class="section features">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker"><span class="dot"></span> Pourquoi ParentEase</span>
+      <h2>4 choses que <span class="marker">personne d'autre</span> ne fait.</h2>
+      <p>On a passé 2 ans à parler à 800 parents avant d'écrire la moindre ligne de code.</p>
+    </div>
+
+    <div class="feat-grid">
+      <article class="feat">
+        <div class="glyph">🩺</div>
+        <h3>Vrais expert·es, vraies citations</h3>
+        <p>Chaque conseil est signé par un·e pédiatre, psychologue ou consultant·e sommeil — pas par une IA générique.</p>
+      </article>
+
+      <article class="feat">
+        <div class="glyph">🌍</div>
+        <h3>Multiculturel par design</h3>
+        <p>Familles immigrantes, traditions diverses, valeurs religieuses. Le bot s'adapte, ne juge jamais.</p>
+      </article>
+
+      <article class="feat">
+        <div class="glyph">🎲</div>
+        <h3>60 jeux parent-enfant</h3>
+        <p>Tu demandes « jeu », on te propose une activité 5–15 min selon l'âge, le lieu et ton énergie du moment.</p>
+      </article>
+
+      <article class="feat">
+        <div class="glyph">🔒</div>
+        <h3>RGPD-natif, jamais revendu</h3>
+        <p>Données hébergées en Europe. Stop ou suppression en 1 message. Zéro pub, zéro tracking pour publicité.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ─── AUTHORS ──────────────────────────────────── -->
+<section class="section authors" id="auteurs">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker"><span class="dot"></span> Notre équipe</span>
+      <h2>10 voix qui <span class="marker">connaissent</span><br/>tes nuits, tes midis, tes 16h.</h2>
+      <p>Tous·tes en exercice. Tous·tes ici. Tu peux lire leurs publications, leurs profils LinkedIn, leurs articles.</p>
+    </div>
+
+    <div class="author-grid">
+
+      <article class="author">
+        <div class="flag" title="Canada">🇨🇦</div>
+        <div class="photo">🩺</div>
+        <div class="name">Dr. Amara Diallo</div>
+        <div class="role">Pédiatre · CHU Sainte-Justine<br/>Montréal</div>
+        <div class="specs">
+          <span class="spec">Nourrisson</span>
+          <span class="spec">Vaccination</span>
+        </div>
+      </article>
+
+      <article class="author">
+        <div class="flag" title="Brésil → France">🇧🇷</div>
+        <div class="photo">🧠</div>
+        <div class="name">Dr. Isabella Ferreira</div>
+        <div class="role">Neuropsychologue<br/>Paris · INSERM</div>
+        <div class="specs">
+          <span class="spec">TDAH</span>
+          <span class="spec">Trauma</span>
+        </div>
+      </article>
+
+      <article class="author">
+        <div class="flag" title="Inde → UK">🇮🇳</div>
+        <div class="photo">🌟</div>
+        <div class="name">Priya Nair</div>
+        <div class="role">Coach parentale ICF PCC<br/>Londres · Penguin UK</div>
+        <div class="specs">
+          <span class="spec">Interculturel</span>
+          <span class="spec">Limites</span>
+        </div>
+      </article>
+
+      <article class="author">
+        <div class="flag" title="Suède">🇸🇪</div>
+        <div class="photo">😴</div>
+        <div class="name">Emma Lindqvist</div>
+        <div class="role">Sage-femme &amp; sommeil<br/>Stockholm · Karolinska</div>
+        <div class="specs">
+          <span class="spec">Cododo</span>
+          <span class="spec">Sommeil bébé</span>
+        </div>
+      </article>
+
+      <article class="author">
+        <div class="flag" title="Japon → Belgique">🇯🇵</div>
+        <div class="photo">🥗</div>
+        <div class="name">Dr. Yuki Tanaka</div>
+        <div class="role">Diététicienne pédiatrique<br/>Bruxelles · ULB · EFSA</div>
+        <div class="specs">
+          <span class="spec">Diversification</span>
+          <span class="spec">Microbiote</span>
+        </div>
+      </article>
+
+      <article class="author">
+        <div class="flag" title="USA">🇺🇸</div>
+        <div class="photo">🩻</div>
+        <div class="name">Dr. Marcus Johnson</div>
+        <div class="role">MD · Johns Hopkins<br/>Baltimore · AAP</div>
+        <div class="specs">
+          <span class="spec">Allergies</span>
+          <span class="spec">Asthme</span>
+        </div>
+      </article>
+
+      <article class="author">
+        <div class="flag" title="USA">🇺🇸</div>
+        <div class="photo">💆‍♀️</div>
+        <div class="name">Dr. Sofia Reyes</div>
+        <div class="role">PsyD · CHLA<br/>Los Angeles · USC</div>
+        <div class="specs">
+          <span class="spec">Attachement</span>
+          <span class="spec">Trauma</span>
+        </div>
+      </article>
+
+      <article class="author">
+        <div class="flag" title="Canada">🇨🇦</div>
+        <div class="photo">🌙</div>
+        <div class="name">Étienne Bouchard</div>
+        <div class="role">Consultant sommeil Gold<br/>BC Children's Hospital</div>
+        <div class="specs">
+          <span class="spec">Sans pleurs</span>
+          <span class="spec">Prématuré</span>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── GAMES ─────────────────────────────────── -->
+<section class="section games" id="jeux">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker"><span class="dot"></span> 60 jeux dans le bot</span>
+      <h2>« <span class="marker">Maman, on joue ?</span> »<br/>Voilà la réponse.</h2>
+      <p>Tu envoies « jeu » sur WhatsApp. On te propose une activité parent-enfant adaptée à l'âge, au lieu et à ton énergie du moment.</p>
+    </div>
+
+    <div class="games-grid">
+
+      <article class="game">
+        <span class="age">2–4 ans</span>
+        <span class="emoji">🐸</span>
+        <h4>La chasse aux couleurs</h4>
+        <p>« Trouve-moi 3 choses oranges dans la maison ». 5 minutes, zéro matériel, vocabulaire qui explose.</p>
+        <div class="meta">
+          <span class="tag">Intérieur</span>
+          <span class="tag energy-low">😴 Calme</span>
+        </div>
+      </article>
+
+      <article class="game">
+        <span class="age">3–5 ans</span>
+        <span class="emoji">🍳</span>
+        <h4>Le restaurant imaginaire</h4>
+        <p>L'enfant prend ta commande, te sert, encaisse. Langage, motricité fine, lien fort. Ils adorent.</p>
+        <div class="meta">
+          <span class="tag">Intérieur</span>
+          <span class="tag energy-mid">⚡ Moyen</span>
+        </div>
+      </article>
+
+      <article class="game">
+        <span class="age">5–8 ans</span>
+        <span class="emoji">🗺️</span>
+        <h4>Chasse au trésor maison</h4>
+        <p>5 indices écrits, 1 trésor (un raisin, un câlin). Lecture, logique, tu reprends ton souffle pendant qu'iel cherche.</p>
+        <div class="meta">
+          <span class="tag">Intérieur</span>
+          <span class="tag energy-high">🔥 Actif</span>
+        </div>
+      </article>
+
+      <article class="game">
+        <span class="age">8–12 ans</span>
+        <span class="emoji">🔐</span>
+        <h4>Le code secret du dîner</h4>
+        <p>Vous parlez en code (chiffres = lettres) pendant 1 repas. Les ados sortent du silence, c'est presque magique.</p>
+        <div class="meta">
+          <span class="tag">Table</span>
+          <span class="tag energy-low">😴 Calme</span>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="games-foot">
+      <span class="scribble">— et 56 autres dans le bot —</span>
+      <a href="#cta" class="btn btn-sun">
+        Recevoir mon premier jeu
+        <span class="btn-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TESTIMONIALS ─────────────────────────────── -->
+<section class="section testimonials">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker"><span class="dot"></span> Témoignages</span>
+      <h2>Des parents qui <span class="marker">dorment</span> à nouveau.</h2>
+      <p>Les 3 dernières familles qui ont accepté de témoigner publiquement (avec photo et prénom réel).</p>
+    </div>
+
+    <div class="testi-grid">
+      <article class="testi">
+        <div class="quote">"</div>
+        <div class="stars">★★★★★</div>
+        <p>« Mon fils de 4 ans faisait des crises tous les soirs avant le bain. En 2 semaines de plans matinaux, on a un rituel qui fonctionne. Je n'y croyais pas. »</p>
+        <div class="person">
+          <div class="ava">A</div>
+          <div>
+            <b>Aïcha B.</b>
+            <small>Casablanca · 1 enfant (4 ans)</small>
+          </div>
+        </div>
+      </article>
+
+      <article class="testi">
+        <div class="quote">"</div>
+        <div class="stars">★★★★★</div>
+        <p>« J'avais essayé 3 livres et 2 podcasts. Le coach me parle DIRECTEMENT de ma situation, à 22h, quand j'en ai besoin. Plus jamais sans. »</p>
+        <div class="person">
+          <div class="ava">M</div>
+          <div>
+            <b>Marie L.</b>
+            <small>Lyon · 2 enfants (1 et 3 ans)</small>
+          </div>
+        </div>
+      </article>
+
+      <article class="testi">
+        <div class="quote">"</div>
+        <div class="stars">★★★★★</div>
+        <p>« Le seul outil parental qui parle à un papa sans condescendance. Les jeux du dimanche ont sauvé mes weekends de garde. »</p>
+        <div class="person">
+          <div class="ava">K</div>
+          <div>
+            <b>Karim R.</b>
+            <small>Bruxelles · 1 enfant (6 ans)</small>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PRICING ──────────────────────────────────── -->
+<section class="section pricing" id="offres">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker"><span class="dot"></span> Tarifs simples</span>
+      <h2>3 formules. <span class="marker">Zéro engagement.</span></h2>
+      <p>Tu commences gratuitement. Tu passes payant uniquement si tu sens que ça te change la vie.</p>
+    </div>
+
+    <div class="price-grid">
+
+      <article class="price-card">
+        <div class="pname">Liberté</div>
+        <p class="pblurb">Pour goûter avant de t'engager.</p>
+        <div class="price">0<small>€</small></div>
+        <div class="perio">à vie</div>
+        <ul>
+          <li>1 enfant suivi</li>
+          <li>1 plan matinal /jour</li>
+          <li>5 conversations /jour</li>
+          <li>5 jeux /mois</li>
+          <li>Accès au blog complet</li>
+        </ul>
+        <a href="#cta" class="btn btn-ghost pcta">Commencer →</a>
+      </article>
+
+      <article class="price-card popular">
+        <div class="pname">Famille</div>
+        <p class="pblurb">Le rythme complet, pour toute la maison.</p>
+        <div class="price">9,90<small>€/mois</small></div>
+        <div class="perio">ou 79€/an · -33%</div>
+        <ul>
+          <li>Enfants illimités</li>
+          <li>Plans &amp; conversations sans limite</li>
+          <li>Check-in soir + bilan dimanche</li>
+          <li><strong>60 jeux parent-enfant</strong></li>
+          <li>Export PDF mensuel</li>
+        </ul>
+        <a href="#cta" class="btn btn-coral pcta">S'abonner →</a>
+      </article>
+
+      <article class="price-card">
+        <div class="pname">Atelier</div>
+        <p class="pblurb">Pour les passages plus durs.</p>
+        <div class="price">24,90<small>€/mois</small></div>
+        <div class="perio">ou 199€/an · -33%</div>
+        <ul>
+          <li>Tout l'abonnement Famille</li>
+          <li><strong>1 appel humain /mois</strong> (30 min)</li>
+          <li>Groupe WhatsApp privé par âge</li>
+          <li>Cartes jeux imprimables</li>
+          <li>Bilan mensuel personnalisé</li>
+        </ul>
+        <a href="#cta" class="btn btn-primary pcta">Réserver →</a>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── FAQ ─────────────────────────────────────── -->
+<section class="section faq" id="faq">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker"><span class="dot"></span> FAQ</span>
+      <h2>Les questions qu'on <span class="marker">nous pose</span> le plus.</h2>
+    </div>
+
+    <div class="faq-list">
+      <details class="faq-item" open>
+        <summary>C'est de l'IA ou de vrais expert·es qui répondent ?</summary>
+        <p>Les deux. La rédaction des plans matinaux et des bilans est faite par notre IA, mais le moteur a été entraîné sur les méthodologies signées de nos 10 expert·es (publications, conférences, livres). Pour les sujets délicats — TDAH, deuil, violence — le bot t'oriente vers un·e professionnel·le humain. Et l'offre Atelier inclut un appel mensuel avec un coach parental humain.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>Mes données sont-elles vraiment privées ?</summary>
+        <p>Oui. Les conversations sont stockées dans une base SQLite hébergée en Europe (Railway). Aucun partage avec des annonceurs. Aucune revente. Tu peux demander la suppression complète en envoyant « reset » sur WhatsApp. Les profils enfant ne sont jamais utilisés pour entraîner le modèle. Conformité RGPD assurée.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>Pourquoi WhatsApp et pas une app dédiée ?</summary>
+        <p>Parce que tu n'as PAS besoin d'une app de plus. WhatsApp est déjà là, dans ta poche, ouvert toute la journée. Zéro friction. On a aussi une webapp pour ceux qui veulent un dashboard détaillé (graphes humeur, historique, bilans), mais ce n'est jamais obligatoire.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>Ça remplace un·e pédiatre ou un·e psychologue ?</summary>
+        <p>Non, et on ne le prétendra jamais. ParentEase est un coach parental — il accompagne le quotidien (sommeil, repas, crises, communication). Pour tout ce qui touche au médical ou au psychologique grave, on t'oriente immédiatement vers un·e professionnel·le humain. C'est un complément, pas un substitut.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>Et si je n'aime pas, je peux annuler comment ?</summary>
+        <p>Tu envoies « stop » sur WhatsApp. Fin de la conversation, fin des messages programmés. Pour les abonnés payants, l'annulation se fait depuis le tableau de bord en 1 clic — pas de mail à envoyer, pas de motif à donner. Et tu gardes l'accès jusqu'à la fin de ta période payée.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FINAL CTA ────────────────────────────────── -->
+<section class="cta-final" id="cta">
+  <div class="wrap">
+    <h2>Prête à goûter <span class="scribble">une nuit douce ?</span></h2>
+    <p>Aucun téléchargement. Aucune carte bancaire. Premier plan dans 60 secondes.</p>
+    <div class="buttons">
+      <a href="#" class="btn btn-primary">
+        Démarrer sur WhatsApp
+        <span class="btn-arrow">→</span>
+      </a>
+      <a href="#" class="btn btn-ghost">
+        Démarrer sur Telegram
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ──────────────────────────────────── -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="brand">
+          <div class="brand-icon">🌈</div>
+          <b>Parent<em>Ease</em></b>
+        </div>
+        <p>Le coach parental qui rend les soirs plus doux. 10 expert·es, 18 pays, 0 jugement.</p>
+        <div class="foot-socials">
+          <a href="#" aria-label="Instagram">📷</a>
+          <a href="#" aria-label="TikTok">🎵</a>
+          <a href="#" aria-label="LinkedIn">💼</a>
+          <a href="#" aria-label="YouTube">▶️</a>
+        </div>
+      </div>
+
+      <div>
+        <h4>Produit</h4>
+        <a href="#comment">Comment ça marche</a>
+        <a href="#auteurs">Nos expert·es</a>
+        <a href="#jeux">Jeux parent-enfant</a>
+        <a href="#offres">Tarifs</a>
+        <a href="#">Webapp parent</a>
+      </div>
+
+      <div>
+        <h4>Le journal</h4>
+        <a href="#">Sommeil</a>
+        <a href="#">Discipline positive</a>
+        <a href="#">Développement</a>
+        <a href="#">Nutrition</a>
+        <a href="#">Adolescence</a>
+      </div>
+
+      <div>
+        <h4>Maison</h4>
+        <a href="#">À propos</a>
+        <a href="#">Contact</a>
+        <a href="#">Devenir auteur·e</a>
+        <a href="#">Mentions légales</a>
+        <a href="#">RGPD &amp; cookies</a>
+      </div>
+    </div>
+
+    <div class="foot-bot">
+      <span>© ParentEase 2026 · Made with 🤍 à Casablanca, Paris, Montréal</span>
+      <span>FR · EN · ES · PT · العربية</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// petit easter-egg : la brand-icon change d'emoji au hover
+const icons = ['🌈','✨','🎈','🦄','🎨','🌟','💫'];
+let i = 0;
+document.querySelector('.brand').addEventListener('mouseenter', () => {
+  i = (i + 1) % icons.length;
+  document.querySelector('.brand-icon').textContent = icons[i];
+});
+</script>
+
+</body>
+</html>
