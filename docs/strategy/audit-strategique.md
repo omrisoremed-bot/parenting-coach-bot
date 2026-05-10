@@ -1,4 +1,4 @@
-# ParentEase — Audit Stratégique Complet
+# ParentAtEase — Audit Stratégique Complet
 > 2026-05-09 · Failles, SEO, jeux parent-enfant, monétisation
 
 ---
@@ -132,7 +132,7 @@ PILIER 3 : DISCIPLINE POSITIVE (à créer — Thomas Girard ou nouvelle auteure)
 
 ### 3.1 Pourquoi c'est stratégique
 - Différenciation forte vs ChatGPT (qui est passif)
-- Augmente le **temps en famille** = mission ParentEase incarnée
+- Augmente le **temps en famille** = mission ParentAtEase incarnée
 - Génère du contenu social viral (photos/vidéos parents)
 - Création d'un **angle SEO inédit** : "jeux parent-enfant 3 ans intérieur" = 12 000 recherches/mois FR
 
@@ -179,7 +179,7 @@ POURQUOI ÇA MARCHE (1 phrase de neuro/psycho)
 
 ### 3.5 Monétisation des jeux
 - **Cartes jeux imprimables** (PDF freemium) : 10 gratuits / 50 premium / 200 platinum
-- **Boîte physique "ParentEase Game Box"** trimestrielle (modèle KiwiCo) — €29/trimestre
+- **Boîte physique "ParentAtEase Game Box"** trimestrielle (modèle KiwiCo) — €29/trimestre
 - **Affiliation matériel** : Amazon, Lalibrairie, Nature & Découvertes pour les jeux qui demandent du matériel
 
 ---
@@ -227,7 +227,7 @@ POURQUOI ÇA MARCHE (1 phrase de neuro/psycho)
 1. **B2B Crèches/Écoles** : licence groupée 290 €/an pour 100 familles → revenus stables
 2. **Affiliation Amazon/Fnac/Boulanger** : matériel pédagogique recommandé dans les fiches jeu (5–8% commission)
 3. **Cours en ligne** : "Méthode Douce Nuit" (Étienne) à 49 € · "Discipline positive 3-6 ans" à 49 € · upsell aux Family
-4. **Boîte physique trimestrielle** : ParentEase Game Box 29 €/trimestre × 3 niveaux d'âge
+4. **Boîte physique trimestrielle** : ParentAtEase Game Box 29 €/trimestre × 3 niveaux d'âge
 5. **Sponsoring éditorial** : marques alignées (Naître et grandir, Avent, Élhée) — 1 article sponsorisé par mois max @ 1 200-2 500 €
 6. **Données anonymisées** (long terme, RGPD-friendly) : "Baromètre du sommeil bébé" vendu aux marques de puériculture
 

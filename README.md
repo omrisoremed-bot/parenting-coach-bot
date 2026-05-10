@@ -1,8 +1,10 @@
-# AI Parenting Coach — WhatsApp Bot
+# ParentAtEase — AI Parenting Coach (WhatsApp + Telegram + Web)
 
-A fully automated AI Parenting Coach that runs on WhatsApp. Delivers personalized daily guidance to parents based on their child's age, development stage, and family context.
+A fully automated AI Parenting Coach that runs on WhatsApp and Telegram, with a parent web dashboard and a public blog. Delivers personalized daily guidance to parents based on their child's age, development stage, and family context.
 
-**Cost: ~$8–13/month. No app. No subscription. Just WhatsApp.**
+**Cost: ~$8–13/month. No app to install. No subscription required for the free tier. Just messaging.**
+
+> 📜 **Naming history**: This project was originally `Parenting Coach` → `Nour` → `NurtureCoach` → `ParentEase` → `ParentAtEase` (current, since 2026-05-10 — the previous name was taken by competitors on `parentease.app`, `parentease.ca`, and Google Play).
 
 ---
 
@@ -24,7 +26,7 @@ A fully automated AI Parenting Coach that runs on WhatsApp. Delivers personalize
 ### Prerequisites
 - Node.js 18+
 - A server with a public HTTPS URL (Railway, Render, or VPS)
-- An Anthropic API key (claude.ai/api)
+- An OpenAI-compatible API key (`AI_API_KEY`) — defaults to OpenAI Platform (`api.openai.com/v1`, model `gpt-4o-mini`) but works with any OpenAI-compatible provider (NVIDIA NIM, Groq, OpenRouter, Together)
 
 ---
 

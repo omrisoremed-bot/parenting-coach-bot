@@ -1,12 +1,29 @@
-# PRD — ParentEase (multi-canal)
-> Version 2.0 — 2026-04-14
+# PRD — ParentAtEase (multi-canal)
+> Version 2.1 — mis à jour 2026-05-10
 > Remplace l'ancien PRD WhatsApp-only (archivé sous `PRD-v1-whatsapp.md`)
+
+---
+
+## 0. Historique des noms
+
+Le projet a évolué à travers plusieurs identités de marque avant d'arriver à **ParentAtEase** :
+
+| # | Nom | Période | Pourquoi changé |
+|---|-----|---------|------------------|
+| 1 | **Parenting Coach** | Démarrage | Nom de travail technique |
+| 2 | **Nour** | Mi-projet | Identité chaleureuse, ancrage MENA (نور = lumière) |
+| 3 | **NurtureCoach** | Pivot intl. | Anglicisation pour marché global |
+| 4 | **ParentEase** | Phase 4 | Positionnement « easy parenting » |
+| 5 | **ParentAtEase** ← *actuel* | 2026-05-10 | ParentEase pris par concurrents sur `parentease.app` / `.ca` / Google Play |
+
+> Le nom de domaine `parentatease.com` est en cours d'acquisition.
+> URL temporaire : `parentatease.netlify.app` (à configurer).
 
 ---
 
 ## 1. Vision produit
 
-**ParentEase** est un coach parental IA accessible **partout où les parents se trouvent déjà** : WhatsApp, Telegram, web. Chaque canal partage le même cerveau (profil, mémoire, base de connaissances), la même méthodologie de coaching, et la même IA. En parallèle, un blog et un moteur de contenu social alimentent l'acquisition.
+**ParentAtEase** est un coach parental IA accessible **partout où les parents se trouvent déjà** : WhatsApp, Telegram, web. Chaque canal partage le même cerveau (profil, mémoire, base de connaissances), la même méthodologie de coaching, et la même IA. En parallèle, un blog et un moteur de contenu social alimentent l'acquisition.
 
 **Promesse produit :**
 > Un plan parental personnalisé chaque matin, une présence bienveillante 24h/24, en 5 langues — sans app à installer.
@@ -15,7 +32,7 @@
 - Woebot / Wysa → santé mentale adulte, closed-source, payant
 - Koko → peer-support communautaire, pas de coaching individuel
 - Headspace for Parents / Lovevery → contenu éditorial, pas d'IA conversationnelle
-- **ParentEase** → IA conversationnelle + plans quotidiens + multi-canal + OSS stack
+- **ParentAtEase** → IA conversationnelle + plans quotidiens + multi-canal + OSS stack
 
 ---
 

@@ -1,6 +1,6 @@
 # ANALYSE COMPLÈTE DU PROJET — État des lieux toutes sessions confondues
 
-> **Projet** : ParentEase (anciennement Parenting Coach → Nour → NurtureCoach)
+> **Projet** : ParentAtEase (anciennement Parenting Coach → Nour → NurtureCoach)
 > **Date d'analyse** : 2026-05-10
 > **Périmètre analysé** : `D:\mes test de projet\Parenting Coach\` + worktree `.claude/worktrees/hardcore-tharp/`
 > **Sessions tracées** : 28 commits Git + travaux non commités (frontend redesign, strategy docs, workflow rédactionnel)
@@ -23,7 +23,7 @@
 **Phase 5 (monétisation + Mem0 + multi-enfants)** : non démarrée.
 
 **Blocages actuels :**
-1. Nom **ParentEase pris** sur 3 plateformes concurrentes → rebrand obligatoire avant launch payant.
+1. Nom **ParentAtEase pris** sur 3 plateformes concurrentes → rebrand obligatoire avant launch payant.
 2. **Clé OpenAI exposée en clair** dans une conversation (à révoquer immédiatement).
 3. **Pas de tests automatisés**, pas de monitoring en production, pas de backup SQLite.
 4. **EEAT fragile** : auteurs fictifs sans empreinte LinkedIn réelle (risque déclassement Google).
@@ -39,8 +39,8 @@ Le projet a changé de nom **4 fois** depuis sa création :
 | 1 | **Parenting Coach** | Création initiale | Nom technique de travail |
 | 2 | **Nour** | Mi-projet (commit 9ebeca4) | Identité plus chaude, ancrage arabe (نور = lumière) |
 | 3 | **NurtureCoach** | Commits 568f3cb → 45b97ff | Anglicisation pour marché international |
-| 4 | **ParentEase** | Commits d87c3f8 → ec6afce | Positionnement "easy parenting" |
-| 5 | **À DÉCIDER** | 2026-05-10 | **ParentEase est pris** sur `parentease.app`, `parentease.ca`, Google Play |
+| 4 | **ParentAtEase** | Commits d87c3f8 → ec6afce | Positionnement "easy parenting" |
+| 5 | **ParentAtEase** | 2026-05-10 | « ParentEase » était pris par concurrents sur `parentease.app`, `parentease.ca`, Google Play |
 
 **Statut actuel du nom** : en cours de re-décision. Finalistes proposés et vérifiés : **Lullo**, **Mileto**, **Pamio**, **Ouri**, **Tisso** (aucun hit dans la niche parentale).
 
@@ -71,8 +71,8 @@ Le projet a changé de nom **4 fois** depuis sa création :
 |--------|--------|
 | `568f3cb` | Rebrand → **NurtureCoach** + langues ES/PT, suppression Darija |
 | `50790aa` | Fix landing NurtureCoach + vraies vidéos YouTube |
-| `d87c3f8` | Rebrand → **ParentEase** + icônes SVG + refonte FAQ + attribution rédacteurs |
-| `f1aa1d5` | ParentEase déployé sur gh-pages |
+| `d87c3f8` | Rebrand → **ParentAtEase** + icônes SVG + refonte FAQ + attribution rédacteurs |
+| `f1aa1d5` | ParentAtEase déployé sur gh-pages |
 
 ### Phase multilangue
 | Commit | Apport |
@@ -249,7 +249,7 @@ PORT=9000, NODE_ENV=production, TIMEZONE=Africa/Casablanca, LOG_LEVEL=info
 | Webapp parent | Railway | `parenting-coach-production-6c1b.up.railway.app/webapp/` |
 | API webapp | Railway | `parenting-coach-production-6c1b.up.railway.app/api/` |
 | Landing publique | GitHub Pages (`gh-pages` branch) | `omrisoremed-bot.github.io/parenting-coach-bot/` |
-| Landing live actuelle | Netlify | `parentflow-ai.netlify.app` |
+| Landing live actuelle | Netlify | `parentatease.netlify.app` |
 
 ---
 
@@ -405,7 +405,7 @@ Version live actuelle sur GitHub Pages + Netlify. Design SaaS classique avec sec
 | Phase | Objectif | Statut | Livrables |
 |-------|----------|--------|-----------|
 | **0** | WhatsApp bot prod + landing 5 langs + blog | ✅ **DONE** | Bot Railway live, landing GitHub Pages, 6 articles blog |
-| **1** | Bot Telegram MVP (parité WhatsApp) | ✅ **DONE** | `@ParentEasebot` live, `messengerAdapter` opérationnel |
+| **1** | Bot Telegram MVP (parité WhatsApp) | ✅ **DONE** | `@ParentAtEaseBot` live, `messengerAdapter` opérationnel |
 | **2** | Webapp parent MVP (OTP auth + dashboard) | ✅ **DONE** | webapp/ vanilla JS, /api/{me,history,otp,verify,logout} |
 | **3** | Génération articles IA | ✅ **DONE** | `npm run article` produit drafts MD avec frontmatter |
 | **4a** | Knowledge PDFs intégrés au prompt | ✅ **DONE** | 6 PDFs parsés, 131K chars, postinstall auto |
@@ -415,7 +415,7 @@ Version live actuelle sur GitHub Pages + Netlify. Design SaaS classique avec sec
 | **4e** | Audit stratégique + analytics plan | ✅ **DONE** | docs/strategy/ + docs/analytics/ |
 | **4f** | Redesign frontend (kids vibe) | ✅ **DONE** | landing/redesign/index.html v2 |
 | **5** | Monétisation + Mem0 + multi-enfants | 📋 **PLANNED** | Non démarré |
-| **REBRAND** | Nouveau nom (ParentEase pris) | 🔄 **EN COURS** | Décision finaliste : Lullo/Mileto/Pamio/Ouri |
+| **REBRAND** | Nouveau nom (ParentAtEase pris) | 🔄 **EN COURS** | Décision finaliste : Lullo/Mileto/Pamio/Ouri |
 
 **Pourcentage roadmap livré** : ~83 % (10 sous-phases sur 12).
 
@@ -487,7 +487,7 @@ npm run seo:all
 ### 11.1 Bloqueurs critiques (P0)
 | # | Risque | Impact | Action |
 |---|--------|--------|--------|
-| 1 | **Nom ParentEase pris** sur 3 plateformes | Impossibilité de SEO-dominer, risque légal confusion | Rebrand immédiat (Lullo recommandé) |
+| 1 | **Nom ParentAtEase pris** sur 3 plateformes | Impossibilité de SEO-dominer, risque légal confusion | Rebrand immédiat (Lullo recommandé) |
 | 2 | **Clé OpenAI exposée** en clair dans chat | Facturation tiers possible, vol de quota | Révoquer immédiatement sur platform.openai.com |
 | 3 | **Auteurs fictifs sans LinkedIn réel** | Google détecte → déclasse pour EEAT | Soit créer profils LinkedIn réels, soit basculer sur experts réels rémunérés |
 
@@ -584,9 +584,9 @@ npm run seo:all
 | 10 | Thomas Girard | Coaching paternité | 🇫🇷 Lyon | À documenter (priorité — angle père) |
 
 ### 14.2 Liens de production
-- **Bot Telegram** : https://t.me/ParentEasebot
+- **Bot Telegram** : https://t.me/ParentAtEaseBot
 - **Bot WhatsApp webhook** : `parenting-coach-production-6c1b.up.railway.app/webhook`
-- **Landing live** : `parentflow-ai.netlify.app`
+- **Landing live** : `parentatease.netlify.app`
 - **Landing GitHub Pages** : `omrisoremed-bot.github.io/parenting-coach-bot/`
 - **Repo GitHub** : `omrisoremed-bot/parenting-coach-bot`
 
@@ -605,7 +605,7 @@ npm run seo:all
 ## 15. CONCLUSION
 
 Le projet est dans un **état de maturité technique élevé** (80%+ de la roadmap livrée) mais **bloqué côté go-to-market** par :
-1. La perte du nom commercial **ParentEase** (pris par 3 concurrents)
+1. La perte du nom commercial **ParentAtEase** (pris par 3 concurrents)
 2. L'absence de tarification activée (pas de Stripe, pas de paywall)
 3. L'EEAT fragile (auteurs fictifs sans empreinte LinkedIn réelle)
 

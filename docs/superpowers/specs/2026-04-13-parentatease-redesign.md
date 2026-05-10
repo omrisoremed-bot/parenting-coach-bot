@@ -1,8 +1,8 @@
-# ParentEase Landing Page Redesign — Design Spec
+# ParentAtEase Landing Page Redesign — Design Spec
 Date: 2026-04-13
 
 ## 1. Brand Identity
-- **Name**: ParentEase (was NurtureCoach → Nour)
+- **Name**: ParentAtEase (was NurtureCoach → Nour)
 - **Tagline**: "Le coaching parental, simplifié."
 - **Remove**: All Arabic `نور` text (nav logo, testimonials)
 - **Colors** (keep existing palette):
@@ -50,33 +50,33 @@ Avatar gradient: AD = #0F4C81→#1B6CA8, TG = #0D9488→#0891B2
 ## 5. FAQ Revamp
 New FAQ — 8 questions, organized thematically:
 
-1. **Qu'est-ce que ParentEase exactement ?**
-   ParentEase est un coach parental propulsé par une IA avancée, accessible sur WhatsApp. Il envoie chaque matin un plan parental personnalisé selon l'âge de votre enfant, propose un bilan interactif chaque soir à 21h, et reste disponible 24h/24 pour répondre à toutes vos questions. Aucune application à installer.
+1. **Qu'est-ce que ParentAtEase exactement ?**
+   ParentAtEase est un coach parental propulsé par une IA avancée, accessible sur WhatsApp. Il envoie chaque matin un plan parental personnalisé selon l'âge de votre enfant, propose un bilan interactif chaque soir à 21h, et reste disponible 24h/24 pour répondre à toutes vos questions. Aucune application à installer.
 
 2. **Comment fonctionne le plan du matin ?**
-   Chaque matin à 8h, ParentEase vous envoie un message structuré comprenant : une intention parentale du jour, une activité adaptée à l'âge de votre enfant (5-10 minutes), une astuce de communication, et un micro-geste de connexion. Tout est calibré sur votre profil familial.
+   Chaque matin à 8h, ParentAtEase vous envoie un message structuré comprenant : une intention parentale du jour, une activité adaptée à l'âge de votre enfant (5-10 minutes), une astuce de communication, et un micro-geste de connexion. Tout est calibré sur votre profil familial.
 
-3. **ParentEase est-il gratuit ?**
-   Oui, ParentEase est entièrement gratuit pendant la période de lancement. Toutes les fonctionnalités sont accessibles sans carte bancaire ni engagement. Une offre premium pourra être proposée ultérieurement pour les familles souhaitant des fonctionnalités avancées.
+3. **ParentAtEase est-il gratuit ?**
+   Oui, ParentAtEase est entièrement gratuit pendant la période de lancement. Toutes les fonctionnalités sont accessibles sans carte bancaire ni engagement. Une offre premium pourra être proposée ultérieurement pour les familles souhaitant des fonctionnalités avancées.
 
 4. **Quelles langues sont supportées ?**
-   ParentEase parle couramment 5 langues : français, arabe classique (فصحى), espagnol, portugais et anglais. Il détecte automatiquement la langue de votre message et répond dans la même langue. Vous pouvez changer de langue à tout moment.
+   ParentAtEase parle couramment 5 langues : français, arabe classique (فصحى), espagnol, portugais et anglais. Il détecte automatiquement la langue de votre message et répond dans la même langue. Vous pouvez changer de langue à tout moment.
 
 5. **Mes données sont-elles protégées ?**
    Vos données ne sont jamais vendues ni partagées avec des tiers. Le profil de votre famille est utilisé uniquement pour personnaliser vos conseils. Vous pouvez demander la suppression de votre profil à tout moment en envoyant "SUPPRIMER" dans la conversation.
 
-6. **ParentEase remplace-t-il un professionnel de santé ?**
-   Non. ParentEase est un outil de coaching éducatif basé sur des recherches scientifiques validées. Il n'établit aucun diagnostic médical ou psychologique. Pour tout problème de santé mentale, troubles du développement ou situation de crise, consultez un professionnel de santé qualifié.
+6. **ParentAtEase remplace-t-il un professionnel de santé ?**
+   Non. ParentAtEase est un outil de coaching éducatif basé sur des recherches scientifiques validées. Il n'établit aucun diagnostic médical ou psychologique. Pour tout problème de santé mentale, troubles du développement ou situation de crise, consultez un professionnel de santé qualifié.
 
 7. **Pour quels âges d'enfants est-il adapté ?**
-   ParentEase accompagne les parents d'enfants de 0 à 18 ans, avec des conseils adaptés à chaque stade : nouveau-né, nourrisson, tout-petit, préscolaire, primaire, préado et adolescent. Votre profil peut inclure plusieurs enfants d'âges différents.
+   ParentAtEase accompagne les parents d'enfants de 0 à 18 ans, avec des conseils adaptés à chaque stade : nouveau-né, nourrisson, tout-petit, préscolaire, primaire, préado et adolescent. Votre profil peut inclure plusieurs enfants d'âges différents.
 
 8. **Comment me désabonner ?**
-   Pour arrêter de recevoir les messages de ParentEase, envoyez simplement "STOP" à tout moment dans la conversation WhatsApp. La désinscription est instantanée, sans formulaire ni délai de préavis.
+   Pour arrêter de recevoir les messages de ParentAtEase, envoyez simplement "STOP" à tout moment dans la conversation WhatsApp. La désinscription est instantanée, sans formulaire ni délai de préavis.
 
 ## 6. Files to Change
 ### index.html
-- Replace "NurtureCoach" → "ParentEase" (all text occurrences)
+- Replace "NurtureCoach" → "ParentAtEase" (all text occurrences)
 - Remove `<span class="font-arabic ...">نور</span>` from nav logo
 - Remove Arabic نور from testimonials (lines ~812, ~827) — replace with cleaner text
 - Replace all emoji characters with inline SVG icons
@@ -85,10 +85,10 @@ New FAQ — 8 questions, organized thematically:
 
 ### 6 Blog Articles
 - Update writer/author name + email + initials + gradient in schema + cards
-- Replace "NurtureCoach" → "ParentEase" in all titles, descriptions, CTAs
+- Replace "NurtureCoach" → "ParentAtEase" in all titles, descriptions, CTAs
 - Replace emojis in article CTAs and footers with SVG
 
 ### Bot files
-- onboardingFlow.js welcome message: NurtureCoach → ParentEase
-- chat.js system prompt: NurtureCoach → ParentEase
+- onboardingFlow.js welcome message: NurtureCoach → ParentAtEase
+- chat.js system prompt: NurtureCoach → ParentAtEase
 - SOUL.md: no changes needed (no name ref)

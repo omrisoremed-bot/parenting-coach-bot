@@ -1,5 +1,5 @@
 # Workflow Rédaction — 3 Articles par Semaine
-> ParentEase · Stratégie de contenu EEAT · Dernière mise à jour : 2026-04-15
+> ParentAtEase · Stratégie de contenu EEAT · Dernière mise à jour : 2026-04-15
 
 ## Vue d'ensemble
 
@@ -89,7 +89,7 @@ Avant publication, vérifier dans chaque draft :
 - [ ] Chaque H2 contient une action concrète pour le parent
 - [ ] Aucune URL inventée, aucun chiffre non sourçable
 - [ ] Adapté aux familles multiculturelles (pas uniquement occidental)
-- [ ] Section "Pour aller plus loin" avec CTA vers le bot ParentEase
+- [ ] Section "Pour aller plus loin" avec CTA vers le bot ParentAtEase
 
 ---
 
@@ -101,7 +101,7 @@ Le pipeline social (`npm run social`) génère automatiquement un prompt Fal.ai/
 
 Si `FAL_API_KEY` est défini, l'image est générée directement dans `visual.png`.
 
-### Style visuel ParentEase
+### Style visuel ParentAtEase
 - **Palette :** beiges, oranges doux (#fb923c), verts sauge, blancs crème
 - **Style :** chaleureux, lumineux, familles diverses (origines variées)
 - **Éviter :** photos de stock clichées, sourires forcés, décors trop "premium"
@@ -148,7 +148,7 @@ PLAN EN 5 POINTS :
 5. Le conseil du praticien (1 min)
 
 CTA FINAL :
-"Pour un accompagnement quotidien personnalisé, ParentEase est là sur WhatsApp et Telegram."
+"Pour un accompagnement quotidien personnalisé, ParentAtEase est là sur WhatsApp et Telegram."
 
 HASHTAGS YOUTUBE : #parentalité #[spécialité] #[auteur_tag]
 ```

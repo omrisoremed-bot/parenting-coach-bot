@@ -1,8 +1,8 @@
-# Sommaire — ParentEase (multi-canal)
+# Sommaire — ParentAtEase (multi-canal)
 > Dernière mise à jour : 2026-04-14 (Phases 1–4 livrées en MVP)
 
 ## Description
-**ParentEase** est un coach parental IA multi-canal : bot WhatsApp en production, bot Telegram en préparation, webapp parent, blog SEO et moteur de contenu social. Tous les canaux partagent le même cerveau (profil, IA, base de connaissances) via une couche service mutualisée.
+**ParentAtEase** est un coach parental IA multi-canal : bot WhatsApp en production, bot Telegram en préparation, webapp parent, blog SEO et moteur de contenu social. Tous les canaux partagent le même cerveau (profil, IA, base de connaissances) via une couche service mutualisée.
 
 **Stack cœur :** Node.js 18 + Express + `better-sqlite3` + Claude/NVIDIA NIM + Groq Whisper + Railway.
 
@@ -27,7 +27,7 @@
 |---|-----------|--------|--------------|
 | A | **Landing page** (5 langues) | ✅ Prod | `landing/` → GitHub Pages |
 | B | **Bot WhatsApp** | ✅ Prod | `bot.js`, `handlers/`, `services/` → Railway |
-| C | **Bot Telegram** | ✅ Prod (MVP) | `services/telegramService.js` + `messengerAdapter.js` → `@ParentEasebot` |
+| C | **Bot Telegram** | ✅ Prod (MVP) | `services/telegramService.js` + `messengerAdapter.js` → `@ParentAtEaseBot` |
 | D | **Webapp parent** | ✅ MVP v1 | `webapp/` (vanilla JS) + `handlers/webappApi.js` — OTP login via bot |
 | E | **Blog CMS** | 🔄 Génération IA v1 | `scripts/generate-article.js` (LLM) → `landing/blog/drafts/` |
 | F | **Moteur social** | 📋 Phase 4b | `scripts/article-to-social.js` *(à créer)* |
@@ -76,7 +76,7 @@
 | `webapp/index.html` | Login OTP (formulaire phone → code) |
 | `webapp/dashboard.html` | Dashboard profil + enfants + défis + bilans + historique |
 | `webapp/app.js` | Auth flow + appels API + rendering (vanilla JS) |
-| `webapp/styles.css` | Design tokens ParentEase, mobile-first |
+| `webapp/styles.css` | Design tokens ParentAtEase, mobile-first |
 
 ### Landing page + blog
 | Fichier | Rôle |
@@ -110,7 +110,7 @@
 | Phase | Objectif | Statut |
 |-------|---------|--------|
 | **0** | WhatsApp bot prod + landing 5 langues + blog 6 articles | ✅ DONE |
-| **1** | Bot Telegram MVP (parité WhatsApp, réutilise 100% backend) | ✅ DONE (@ParentEasebot) |
+| **1** | Bot Telegram MVP (parité WhatsApp, réutilise 100% backend) | ✅ DONE (@ParentAtEaseBot) |
 | **2** | Webapp parent (dashboard read-only, auth OTP via bot) | ✅ MVP v1 (vanilla JS) |
 | **3** | Génération d'articles IA | ✅ v1 (`npm run article`) — Astro+Decap à faire |
 | **4a** | Knowledge PDFs intégrés au prompt système | ✅ DONE (6 PDFs, 131K chars) |
@@ -130,7 +130,7 @@
 | `GROQ_API_KEY` | Transcription audio | ⚠️ |
 | `ADMIN_TOKEN` | API admin | Recommandé |
 | `TIMEZONE` | Défaut `Africa/Casablanca` | Optionnel |
-| `TELEGRAM_BOT_TOKEN` | Phase 1 — `@ParentEasebot` | ✅ Set |
+| `TELEGRAM_BOT_TOKEN` | Phase 1 — `@ParentAtEaseBot` | ✅ Set |
 | `ARTICLE_MODEL` | Phase 3 — override modèle pour `generate-article.js` | Optionnel |
 | `LANGFUSE_SECRET_KEY` | Observabilité (Phase 5) | 📋 À venir |
 | `FAL_KEY` | Phase 4 | 📋 À venir |
@@ -155,7 +155,7 @@
 
 - **Bot WhatsApp (webhook) :** `https://parenting-coach-production-6c1b.up.railway.app/webhook`
 - **Bot Telegram (webhook) :** `https://parenting-coach-production-6c1b.up.railway.app/webhook/telegram`
-- **Bot Telegram (user-facing) :** https://t.me/ParentEasebot
+- **Bot Telegram (user-facing) :** https://t.me/ParentAtEaseBot
 - **Webapp parent :** `https://parenting-coach-production-6c1b.up.railway.app/webapp/`
 - **API webapp :** `https://parenting-coach-production-6c1b.up.railway.app/api/`
 - **Health check :** `https://parenting-coach-production-6c1b.up.railway.app/health`
@@ -193,7 +193,7 @@ Voir `CLAUDE_SKILLS.md` pour le mapping détaillé. Priorités :
 ## ✅ Status global
 
 - **Phase 0** : ✅ Actif — bot WhatsApp en prod, landing déployée, blog live
-- **Phase 1** : ✅ Livré — `@ParentEasebot` répond en prod via `messengerAdapter`
+- **Phase 1** : ✅ Livré — `@ParentAtEaseBot` répond en prod via `messengerAdapter`
 - **Phase 2** : ✅ MVP v1 — webapp vanilla JS + OTP auth, `/webapp/` live sur Railway
 - **Phase 3** : ✅ v1 — `npm run article -- --topic "..."` génère un brouillon SEO dans `landing/blog/drafts/`
 - **Phase 4a** : ✅ Livré — 6 PDFs académiques parsés et injectés dans le system prompt (131K chars)

@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * generate-article.js — Générateur d'articles de blog ParentEase (Phase 3 v1)
+ * generate-article.js — Générateur d'articles de blog ParentAtEase (Phase 3 v1)
  *
  * Usage :
  *   node scripts/generate-article.js \
@@ -43,7 +43,7 @@ function parseArgs(argv) {
 const args = parseArgs(process.argv);
 const topic   = args.topic;
 const keyword = args.keyword || topic;
-const author  = args.author || 'L\'équipe ParentEase';
+const author  = args.author || 'L\'équipe ParentAtEase';
 const lang    = args.lang || 'fr';
 const model   = args.model || process.env.ARTICLE_MODEL || process.env.AI_MODEL || 'mistralai/mistral-large-2-instruct';
 
@@ -57,7 +57,7 @@ Usage :
 Options :
   --topic    "Sujet/titre de l'article"         (requis)
   --keyword  "mot-clé SEO principal"            (défaut = topic)
-  --author   "Nom de l'auteur"                  (défaut = "L'équipe ParentEase")
+  --author   "Nom de l'auteur"                  (défaut = "L'équipe ParentAtEase")
   --lang     fr|en|es|pt|ar                     (défaut = fr)
   --model    modèle LLM                         (défaut = $AI_MODEL)
 `);
@@ -76,12 +76,12 @@ function slugify(s) {
     .slice(0, 70);
 }
 
-// ─── System prompt (éditorial ParentEase) ────────────────────────────────────
+// ─── System prompt (éditorial ParentAtEase) ────────────────────────────────────
 const KNOWLEDGE = loadKnowledgeBase();
 
-const SYSTEM_PROMPT = `Tu es un·e rédacteur·rice expert·e en parentalité positive pour ParentEase, un coach parental digital. Tu écris des articles de blog longs (1400-1800 mots), chaleureux, pragmatiques et basés sur la recherche.
+const SYSTEM_PROMPT = `Tu es un·e rédacteur·rice expert·e en parentalité positive pour ParentAtEase, un coach parental digital. Tu écris des articles de blog longs (1400-1800 mots), chaleureux, pragmatiques et basés sur la recherche.
 
-## Voix éditoriale ParentEase
+## Voix éditoriale ParentAtEase
 - Ton chaleureux, empathique, sans jugement. On parle au parent comme à un·e ami·e.
 - Pas de jargon. Si un terme technique apparaît, on l'explique immédiatement.
 - Pragmatique : chaque section contient une action concrète que le parent peut tenter DEMAIN.
@@ -137,12 +137,12 @@ reading_time: "..." # ex: "8 min"
 ...
 
 ## Pour aller plus loin
-[1 paragraphe de conclusion avec un appel à l'action doux vers le bot : "Si tu veux un accompagnement quotidien sur ce sujet, ParentEase est à tes côtés sur WhatsApp et Telegram."]
+[1 paragraphe de conclusion avec un appel à l'action doux vers le bot : "Si tu veux un accompagnement quotidien sur ce sujet, ParentAtEase est à tes côtés sur WhatsApp et Telegram."]
 
 ${KNOWLEDGE}`;
 
 // ─── User prompt ─────────────────────────────────────────────────────────────
-const USER_PROMPT = `Rédige un article de blog ParentEase complet sur le sujet suivant :
+const USER_PROMPT = `Rédige un article de blog ParentAtEase complet sur le sujet suivant :
 
 SUJET : ${topic}
 MOT-CLÉ SEO PRINCIPAL : ${keyword}
@@ -151,7 +151,7 @@ LANGUE DE RÉDACTION : ${lang}
 
 Contraintes additionnelles :
 - 1400-1800 mots au total
-- Ton ParentEase (voir système)
+- Ton ParentAtEase (voir système)
 - Respecte STRICTEMENT le format de sortie défini (front-matter + sections)
 - Inclus au moins 2 références à des concepts évoqués dans la base de connaissances (attachement, discipline positive, CNV, développement, etc.) quand c'est pertinent
 - Ne fabrique aucune URL, email, ou citation fictive
@@ -165,7 +165,7 @@ async function generate() {
     baseURL: process.env.AI_BASE_URL || 'https://integrate.api.nvidia.com/v1'
   });
 
-  console.log(`\n📝 Génération d'article ParentEase`);
+  console.log(`\n📝 Génération d'article ParentAtEase`);
   console.log(`   Sujet    : ${topic}`);
   console.log(`   Mot-clé  : ${keyword}`);
   console.log(`   Auteur   : ${author}`);

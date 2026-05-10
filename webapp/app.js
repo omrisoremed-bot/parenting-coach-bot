@@ -1,13 +1,13 @@
 'use strict';
 
 /**
- * ParentEase webapp — vanilla JS (Phase 2 v1)
+ * ParentAtEase webapp — vanilla JS (Phase 2 v1)
  * Handles auth flow (OTP) and dashboard rendering.
  */
 
 const API = '/api';
-const TOKEN_KEY = 'parentease_token';
-const PHONE_KEY = 'parentease_phone';
+const TOKEN_KEY = 'parentatease_token';
+const PHONE_KEY = 'parentatease_phone';
 
 // ─── Router ──────────────────────────────────────────────────────────────────
 const page = location.pathname.split('/').pop() || 'index.html';

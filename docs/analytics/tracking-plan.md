@@ -1,4 +1,4 @@
-# ParentEase — Plan Analytics & Intelligence
+# ParentAtEase — Plan Analytics & Intelligence
 > Tracking · KPIs · Stack outil · Détection d'anomalies
 
 ---
@@ -178,7 +178,7 @@ npm install posthog-node
 # Capture events dans messageHandler.js + webappApi.js
 
 # 2. Plausible
-# Ajouter <script defer data-domain="parentflow-ai.netlify.app" src="https://plausible.io/js/script.js"></script>
+# Ajouter <script defer data-domain="parentatease.netlify.app" src="https://plausible.io/js/script.js"></script>
 # Sur tous les .html
 
 # 3. Search Console

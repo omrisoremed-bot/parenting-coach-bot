@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * weekly-content.js — Générateur de contenu hebdomadaire ParentEase
+ * weekly-content.js — Générateur de contenu hebdomadaire ParentAtEase
  *
  * Génère automatiquement 3 articles + leurs posts sociaux pour un auteur donné,
  * en s'appuyant sur les plans de contenu dans scripts/content-plans/.

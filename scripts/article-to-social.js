@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * article-to-social.js — Moteur de contenu social ParentEase (Phase 4b)
+ * article-to-social.js — Moteur de contenu social ParentAtEase (Phase 4b)
  *
  * Transforme un article de blog en 3 posts plateforme-natifs via un pipeline
  * multi-agents séquentiel :
@@ -110,7 +110,7 @@ async function callAgent(systemPrompt, userPrompt, agentName) {
 }
 
 // ─── Agent 1 — Writer : génère les 3 brouillons ──────────────────────────────
-const WRITER_SYSTEM = `Tu es un social media manager expert en parentalité et en marketing digital pour ParentEase.
+const WRITER_SYSTEM = `Tu es un social media manager expert en parentalité et en marketing digital pour ParentAtEase.
 Tu crées des posts engageants, authentiques et plateforme-natifs à partir d'articles de blog.
 
 Langue cible : ${lang}
@@ -136,7 +136,7 @@ Format de sortie STRICT — réponds EXACTEMENT avec ces 3 blocs, rien d'autre :
 [ton post LinkedIn ici]
 ===END_LINKEDIN===`;
 
-const WRITER_PROMPT = `Voici l'article de blog ParentEase à transformer en posts sociaux :
+const WRITER_PROMPT = `Voici l'article de blog ParentAtEase à transformer en posts sociaux :
 
 TITRE : ${articleTitle}
 
@@ -186,7 +186,7 @@ Renvoie les 3 posts améliorés dans le format demandé.`;
 const VISUAL_SYSTEM = `Tu es un directeur artistique spécialisé en content marketing pour la parentalité.
 Tu crées des prompts de génération d'images (Flux/Midjourney) qui illustrent des articles de blog.
 
-Le style visuel ParentEase :
+Le style visuel ParentAtEase :
 - Chaleureux, lumineux, inclusif. Familles diverses (origines variées).
 - Palette : beiges, oranges doux, verts sauge, blancs crème.
 - Pas de photos de stock clichées. Moments authentiques, intimes, non posés.
@@ -270,7 +270,7 @@ function downloadFile(url, dest) {
 
 // ─── Pipeline principal ───────────────────────────────────────────────────────
 async function run() {
-  console.log('\n🚀 ParentEase — Social Content Pipeline');
+  console.log('\n🚀 ParentAtEase — Social Content Pipeline');
   console.log('═══════════════════════════════════════════');
   console.log(`   Article  : ${articleTitle}`);
   console.log(`   Fichier  : ${path.relative(process.cwd(), articlePath)}`);

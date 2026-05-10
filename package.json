@@ -1,7 +1,7 @@
 {
-  "name": "parenting-coach-whatsapp",
-  "version": "1.0.0",
-  "description": "AI Parenting Coach on WhatsApp — daily automated guidance powered by NVIDIA NIM (Mistral Large)",
+  "name": "parentatease",
+  "version": "1.1.0",
+  "description": "ParentAtEase — AI parenting coach on WhatsApp + Telegram + Web. Daily personalized guidance powered by OpenAI-compatible LLMs.",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",

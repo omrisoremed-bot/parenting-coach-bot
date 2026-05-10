@@ -134,7 +134,7 @@ Ces skills devraient être invoqués **à chaque phase**, pas une fois pour tout
 | `technical-writer` | Structure claire, pédagogique |
 | `humanizer` | Retirer les signes "IA" |
 | `editor` | Édition professionnelle finale |
-| `brand-voice` | Voix éditoriale ParentEase cohérente |
+| `brand-voice` | Voix éditoriale ParentAtEase cohérente |
 
 **Livrables skill-assistés :**
 - Calendrier éditorial 3 mois (skill: `blog-planner`)

@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * generate-sitemap.js — Génère sitemap.xml + robots.txt pour ParentEase
+ * generate-sitemap.js — Génère sitemap.xml + robots.txt pour ParentAtEase
  *
  * Scanne :
  *   landing/             (FR)
@@ -14,7 +14,7 @@
  *   landing/robots.txt
  *
  * Usage :
- *   node scripts/generate-sitemap.js [--site-url https://parentease.app]
+ *   node scripts/generate-sitemap.js [--site-url https://parentatease.netlify.app]
  *
  * À lancer après chaque déploiement (cf. package.json postdeploy).
  */
@@ -27,7 +27,7 @@ const args = process.argv.slice(2).reduce((acc, a, i, arr) => {
   return acc;
 }, {});
 
-const SITE_URL = (args['site-url'] || process.env.SITE_URL || 'https://parentease.app').replace(/\/$/, '');
+const SITE_URL = (args['site-url'] || process.env.SITE_URL || 'https://parentatease.netlify.app').replace(/\/$/, '');
 const ROOT     = path.join(__dirname, '..', 'landing');
 
 const LOCALES = ['', 'en', 'es', 'pt', 'ar'];
@@ -120,7 +120,7 @@ fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), xml, 'utf8');
 console.log(`✅ sitemap.xml — ${dedup.length} URLs → ${path.join(ROOT, 'sitemap.xml')}`);
 
 // ─── robots.txt ──────────────────────────────────────────────────────────────
-const robots = `# robots.txt — ParentEase
+const robots = `# robots.txt — ParentAtEase
 User-agent: *
 Allow: /
 Disallow: /blog/drafts/

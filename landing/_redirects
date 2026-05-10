@@ -1,0 +1,15 @@
+# Netlify redirects — ParentEase → ParentAtEase migration
+# Format: from  to  status  [conditions]
+
+# Legacy ParentEase paths (if any external links survived from old branding)
+/parentease/*                /:splat                       301
+/.well-known/parentease      /.well-known/parentatease     301
+
+# Old Netlify subdomain (if Netlify proxies the old hostname briefly)
+# Configured at Netlify dashboard once domain switch is done
+
+# Blog moved paths (if any)
+# /old-slug                  /blog/new-slug                301
+
+# Default SPA fallback (optional — uncomment if webapp routing needs it)
+# /webapp/*                  /webapp/index.html            200

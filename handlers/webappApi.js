@@ -138,11 +138,11 @@ router.post('/auth/request-otp', async (req, res) => {
   // Envoi via le canal du user (WhatsApp ou Telegram)
   const lang = profile.language || 'fr';
   const messages = {
-    fr: `🔐 Ton code de connexion ParentEase : *${code}*\n\nValide 5 minutes. Ne le partage avec personne.`,
-    en: `🔐 Your ParentEase login code: *${code}*\n\nValid for 5 minutes. Do not share it.`,
-    es: `🔐 Tu código de acceso ParentEase: *${code}*\n\nVálido 5 minutos. No lo compartas.`,
-    pt: `🔐 Teu código de acesso ParentEase: *${code}*\n\nVálido 5 minutos. Não partilhes.`,
-    ar: `🔐 رمز الدخول الخاص بك ParentEase: *${code}*\n\nصالح لمدة 5 دقائق. لا تشاركه مع أحد.`
+    fr: `🔐 Ton code de connexion ParentAtEase : *${code}*\n\nValide 5 minutes. Ne le partage avec personne.`,
+    en: `🔐 Your ParentAtEase login code: *${code}*\n\nValid for 5 minutes. Do not share it.`,
+    es: `🔐 Tu código de acceso ParentAtEase: *${code}*\n\nVálido 5 minutos. No lo compartas.`,
+    pt: `🔐 Teu código de acesso ParentAtEase: *${code}*\n\nVálido 5 minutos. Não partilhes.`,
+    ar: `🔐 رمز الدخول الخاص بك ParentAtEase: *${code}*\n\nصالح لمدة 5 دقائق. لا تشاركه مع أحد.`
   };
   try {
     await sendMessage(phone, messages[lang] || messages.fr);

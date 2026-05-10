@@ -8,7 +8,7 @@ _Dernière mise à jour : 2026-04-14 (Phases 1–4a livrées)_
 - [x] `services/messengerAdapter.js` (routage par préfixe `tg:`)
 - [x] Route `/webhook/telegram` dans `bot.js`
 - [x] Swap des 7 call sites `whatsappService` → `messengerAdapter`
-- [x] Token Railway + webhook enregistré → `@ParentEasebot` live et testé
+- [x] Token Railway + webhook enregistré → `@ParentAtEaseBot` live et testé
 
 ## ✅ Phase 2 — Webapp parent MVP v1 (DONE)
 
@@ -24,7 +24,7 @@ _Dernière mise à jour : 2026-04-14 (Phases 1–4a livrées)_
 - [x] `webapp/index.html` — 2-step login (phone → code)
 - [x] `webapp/dashboard.html` — profil + enfants + défis + bilans + historique
 - [x] `webapp/app.js` — router + auth flow + rendering
-- [x] `webapp/styles.css` — design tokens ParentEase
+- [x] `webapp/styles.css` — design tokens ParentAtEase
 
 **Tests**
 - [x] E2E local : seed user → request-otp → verify-otp → /me → /history → /logout
@@ -32,7 +32,7 @@ _Dernière mise à jour : 2026-04-14 (Phases 1–4a livrées)_
 ## ✅ Phase 3 — Génération d'articles IA v1 (DONE)
 
 - [x] `scripts/generate-article.js` — CLI avec `--topic --keyword --author --lang --model`
-- [x] System prompt éditorial ParentEase (EEAT + SEO + ton + FAQ)
+- [x] System prompt éditorial ParentAtEase (EEAT + SEO + ton + FAQ)
 - [x] Sortie markdown dans `landing/blog/drafts/<date>-<slug>.md`
 - [x] `npm run article -- --topic "..."` exposé dans `package.json`
 - [x] La knowledge base enrichie (MD + PDFs) est injectée dans le system prompt

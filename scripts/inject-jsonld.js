@@ -14,7 +14,7 @@
  *
  * Usage :
  *   node scripts/inject-jsonld.js
- *   node scripts/inject-jsonld.js --site-url https://parentease.app
+ *   node scripts/inject-jsonld.js --site-url https://parentatease.netlify.app
  *   node scripts/inject-jsonld.js --file landing/blog/sommeil-enfant.html
  */
 
@@ -26,7 +26,7 @@ const args = process.argv.slice(2).reduce((acc, a, i, arr) => {
   return acc;
 }, {});
 
-const SITE_URL  = (args['site-url'] || process.env.SITE_URL || 'https://parentease.app').replace(/\/$/, '');
+const SITE_URL  = (args['site-url'] || process.env.SITE_URL || 'https://parentatease.netlify.app').replace(/\/$/, '');
 const ROOT      = path.join(__dirname, '..');
 const BLOG_DIR  = path.join(ROOT, 'landing', 'blog');
 const AUTHOR_DIR = path.join(ROOT, 'docs', 'editorial', 'authors');
@@ -144,7 +144,7 @@ function buildJsonLd(filepath) {
       author:            authorJsonLd(author),
       publisher: {
         '@type': 'Organization',
-        name:    'ParentEase',
+        name:    'ParentAtEase',
         url:     SITE_URL,
         logo:   { '@type': 'ImageObject', url: `${SITE_URL}/assets/logo.png` }
       },
