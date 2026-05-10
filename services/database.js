@@ -113,6 +113,18 @@ function getDb() {
     CREATE INDEX IF NOT EXISTS idx_processed_at ON processed_message_ids(processed_at);
   `);
 
+  // ── One-shot data migration : onboarding 8→3 steps (2026-05-10) ─────────────
+  // Users mid-onboarding at old step >= 3 (challenges, family, culture answered)
+  // are considered "complete" under the new shorter flow. Idempotent thanks to
+  // AND onboarding_complete = 0 — a no-op after first run.
+  _db.exec(`
+    UPDATE users
+       SET onboarding_complete = 1,
+           session_state       = 'idle'
+     WHERE onboarding_step >= 3
+       AND onboarding_complete = 0;
+  `);
+
   logger.info('SQLite database ready', { path: DB_PATH });
   return _db;
 }

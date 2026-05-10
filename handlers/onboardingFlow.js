@@ -1,117 +1,165 @@
 'use strict';
 
+/**
+ * onboardingFlow.js — Streamlined 4-step onboarding (was 8).
+ *
+ * Steps :
+ *   0  Language choice (5 options)
+ *   1  Parent name + child name + child age (combined, parsed)
+ *   2  Main challenge (numbered options + free text)
+ *   3  Cron activation confirm (yes/no)  → GENERATE_PROGRAM
+ *
+ * Everything else (parenting style, family structure, cultural context,
+ * personality, special needs) is enriched LAZILY through the LLM in normal
+ * conversation flow — the bot asks naturally when relevant.
+ *
+ * Rationale (audit 2026-05-10) : 8-step onboarding had ~50% drop-off.
+ * Reducing friction is the highest-leverage conversion lever before paywall.
+ *
+ * Backward compat : users at old onboarding_step >= 3 are auto-marked complete
+ * via a one-shot DB migration in services/database.js.
+ */
+
 const { loadProfile, updateProfile } = require('./profileLoader');
 const { setState, clearState } = require('../services/sessionManager');
 const { sendMessage } = require('../services/messengerAdapter');
-const { callAI, loadKnowledgeBase } = require('../services/aiService');
-const fs   = require('fs');
-const path = require('path');
+const { callAI } = require('../services/aiService');
+const { systemPrompt } = require('../services/promptBuilder');
 const logger = require('../services/logger');
 
-const soul         = fs.readFileSync(path.join(__dirname, '..', 'agents', 'SOUL.md'), 'utf8');
-const systemPrompt = soul + loadKnowledgeBase();
+const JOIN_CODE    = process.env.SANDBOX_JOIN_CODE || 'join on-help';
+const DEFAULT_LANG = 'fr';
 
-const JOIN_CODE = process.env.SANDBOX_JOIN_CODE || 'join on-help';
-
-// ─── Questions multilingues ───────────────────────────────────────────────────
+// ─── Multilingual prompts ────────────────────────────────────────────────────
 const Q = {
   fr: {
-    name:         'Super ! Comment tu t\'appelles ?',
-    child:        'Quel est le prénom de ton enfant et son âge exact ?\n(ex: Yassine, 2 ans et 4 mois)',
-    personality:  'Comment décrirais-tu sa personnalité ?\n\n1. Calme et facile\n2. Énergique et curieux\n3. Sensible et émotif\n4. Têtu et indépendant\n5. Anxieux et collant\n\nRéponds avec le numéro ou décris en quelques mots.',
-    special:      'Ton enfant a-t-il des besoins particuliers ?\n(TDAH, autisme, anxiété, troubles du langage...)\n\nSi non, réponds "Aucun".',
-    challenges:   'Quels sont tes 3 plus grands défis avec ton enfant en ce moment ?\n\nEx: crises de colère, sommeil difficile, refus d\'obéir...',
-    family:       'Quelle est ta situation familiale ?\n\n1. En couple\n2. Parent célibataire\n3. Coparentalité\n4. Famille recomposée',
-    culture:      'Tes valeurs culturelles ou religieuses à respecter ?\n(ex: valeurs islamiques, laïque, bilingue arabe/français...)',
-  },
-  ar: {
-    name:         'رائع! ما اسمك؟',
-    child:        'ما اسم طفلك وعمره بالضبط؟\n(مثال: ياسين، سنتان و4 أشهر)',
-    personality:  'كيف تصف شخصية طفلك؟\n\n1. هادئ وسهل\n2. نشيط وفضولي\n3. حساس وعاطفي\n4. عنيد ومستقل\n5. قلق ومتعلق\n\nأجب برقم أو اكتب بكلماتك.',
-    special:      'هل لدى طفلك احتياجات خاصة؟\n(ADHD، توحد، قلق، اضطرابات لغة...)\n\nإذا لا، اكتب "لا".',
-    challenges:   'ما هي أكبر 3 تحديات تواجهها مع طفلك الآن؟\n\nمثال: نوبات غضب، صعوبة النوم، رفض الطاعة...',
-    family:       'ما هو وضعك العائلي؟\n\n1. متزوج/ة\n2. أحد الوالدين\n3. حضانة مشتركة\n4. عائلة ممتدة',
-    culture:      'ما هي قيمك الثقافية أو الدينية؟\n(مثال: قيم إسلامية، تعليم ثنائي اللغة...)',
-  },
-  es: {
-    name:         '¡Genial! ¿Cómo te llamas?',
-    child:        '¿Cuál es el nombre de tu hijo/a y su edad exacta?\n(ej: Carlos, 2 años y 4 meses)',
-    personality:  '¿Cómo describirías la personalidad de tu hijo/a?\n\n1. Tranquilo y fácil\n2. Enérgico y curioso\n3. Sensible y emotivo\n4. Terco e independiente\n5. Ansioso y apegado\n\nResponde con el número o descríbelo en pocas palabras.',
-    special:      '¿Tu hijo/a tiene necesidades especiales?\n(TDAH, autismo, ansiedad, trastornos del lenguaje...)\n\nSi no, escribe "Ninguna".',
-    challenges:   '¿Cuáles son tus 3 mayores desafíos con tu hijo/a ahora?\n\nEj: berrinches, problemas de sueño, desobediencia...',
-    family:       '¿Cuál es tu situación familiar?\n\n1. En pareja\n2. Padre/madre soltero/a\n3. Coparentalidad\n4. Familia reconstituida',
-    culture:      '¿Valores culturales o religiosos a respetar?\n(ej: valores islámicos, educación bilingüe...)',
-  },
-  pt: {
-    name:         'Ótimo! Como você se chama?',
-    child:        'Qual é o nome e a idade exata do seu filho/a?\n(ex: Carlos, 2 anos e 4 meses)',
-    personality:  'Como você descreveria a personalidade do seu filho/a?\n\n1. Calmo e fácil\n2. Energético e curioso\n3. Sensível e emotivo\n4. Teimoso e independente\n5. Ansioso e dependente\n\nResponda com o número ou descreva em poucas palavras.',
-    special:      'Seu filho/a tem necessidades especiais?\n(TDAH, autismo, ansiedade, atrasos na fala...)\n\nSe não, escreva "Nenhuma".',
-    challenges:   'Quais são seus 3 maiores desafios com seu filho/a agora?\n\nEx: birras, problemas de sono, desobediência...',
-    family:       'Qual é a sua situação familiar?\n\n1. Casal\n2. Pai/mãe solteiro/a\n3. Coparentalidade\n4. Família reconstituída',
-    culture:      'Valores culturais ou religiosos a respeitar?\n(ex: valores islâmicos, educação bilíngue...)',
+    parentChild: 'Super ! Pour démarrer, j\'ai besoin de 2 infos en une phrase :\n\n*Ton prénom + le prénom et l\'âge de ton enfant.*\n\nEx: « Sarah, mon fils Yassine a 3 ans »\n     « Aïcha — Lina, 18 mois »',
+    challenge:   'Quel est ton plus gros défi en ce moment ?\n\n1️⃣ Sommeil & nuits\n2️⃣ Crises & colères\n3️⃣ Écrans & limites\n4️⃣ Alimentation & repas\n5️⃣ École & devoirs\n6️⃣ Autre (écris-moi en quelques mots)',
+    confirm:     'Parfait ! Pour finir, tu veux recevoir :\n\n☀️ Un plan parental personnalisé chaque matin à 8h\n🌙 Un check-in chaque soir à 21h\n📋 Un bilan chaque dimanche\n\n*Réponds OUI ou NON.* Tu pourras tout arrêter à tout moment avec « stop ».',
+    parseHelp:   'Hmm, je n\'ai pas bien lu l\'âge de ton enfant. Tu peux ré-essayer ?\n\nEx: « Sarah, Yassine 3 ans » ou « Marie, Lila a 2 ans et 4 mois »',
+    fallbackOK:  'C\'est parti ! 🎉 Premier plan demain matin à 8h.\nÉcris-moi dès que tu as une question.',
+    fallbackKO:  'Pas de souci, je reste ici quand tu en as besoin. Écris « reprendre » pour activer les messages quotidiens. 🤍',
   },
   en: {
-    name:         'Great! What\'s your name?',
-    child:        'What\'s your child\'s name and exact age?\n(e.g. Yassine, 2 years and 4 months)',
-    personality:  'How would you describe your child\'s personality?\n\n1. Calm and easy-going\n2. Energetic and curious\n3. Sensitive and emotional\n4. Strong-willed and independent\n5. Anxious and clingy\n\nReply with a number or describe in a few words.',
-    special:      'Does your child have any special needs?\n(ADHD, autism, anxiety, speech delays...)\n\nIf no, type "None".',
-    challenges:   'What are your 3 biggest challenges with your child right now?\n\nE.g. tantrums, sleep issues, not listening...',
-    family:       'What is your family situation?\n\n1. Two-parent household\n2. Single parent\n3. Co-parenting\n4. Blended family',
-    culture:      'Any cultural or religious values to respect?\n(e.g. Islamic values, bilingual education, secular...)',
-  }
+    parentChild: 'Great! To get started, I need 2 things in one message:\n\n*Your name + your child\'s name and age.*\n\nE.g. "Sarah, my son Yassine is 3"\n     "Mike — Lina, 18 months"',
+    challenge:   'What\'s your biggest challenge right now?\n\n1️⃣ Sleep & nights\n2️⃣ Tantrums & meltdowns\n3️⃣ Screens & limits\n4️⃣ Eating & meals\n5️⃣ School & homework\n6️⃣ Other (tell me in a few words)',
+    confirm:     'Perfect! Last thing — do you want to receive:\n\n☀️ A personalized morning plan at 8am\n🌙 An evening check-in at 9pm\n📋 A weekly review on Sunday\n\n*Reply YES or NO.* You can stop anytime with "stop".',
+    parseHelp:   'Hmm, I couldn\'t catch your child\'s age. Try again?\n\nE.g. "Sarah, Yassine 3 years" or "Marie, Lila is 2 years and 4 months"',
+    fallbackOK:  'Here we go! 🎉 First plan tomorrow at 8am.\nWrite to me anytime you have a question.',
+    fallbackKO:  'No worries, I\'m here when you need me. Text "resume" to activate daily messages anytime. 🤍',
+  },
+  ar: {
+    parentChild: 'رائع! للبدء، أحتاج إلى معلومتين في رسالة واحدة:\n\n*اسمك + اسم طفلك وعمره.*\n\nمثال: «عائشة، ابني ياسين عمره 3 سنوات»',
+    challenge:   'ما هو أكبر تحدٍ تواجهينه الآن؟\n\n1️⃣ النوم والليالي\n2️⃣ نوبات الغضب\n3️⃣ الشاشات والحدود\n4️⃣ الطعام والوجبات\n5️⃣ المدرسة والواجبات\n6️⃣ آخر (اكتبيه بكلماتك)',
+    confirm:     'ممتاز! آخر شيء — هل تريدين:\n\n☀️ خطة صباحية مخصصة على الساعة 8\n🌙 تسجيل دخول مسائي على الساعة 9\n📋 ملخص أسبوعي يوم الأحد\n\n*أجيبي بـ نعم أو لا.* يمكنك إيقاف ذلك في أي وقت بكتابة "stop".',
+    parseHelp:   'لم أفهم عمر طفلك. حاولي مرة أخرى من فضلك.\n\nمثال: «عائشة، ياسين 3 سنوات»',
+    fallbackOK:  'هيا بنا! 🎉 أول خطة غداً الساعة 8 صباحاً.',
+    fallbackKO:  'لا بأس، أنا هنا عندما تحتاجينني. اكتبي "reprendre" لتفعيل الرسائل اليومية. 🤍',
+  },
+  es: {
+    parentChild: '¡Genial! Para empezar, necesito 2 cosas en un mensaje:\n\n*Tu nombre + el nombre y la edad de tu hijo/a.*\n\nEj: "Sara, mi hijo Carlos tiene 3 años"',
+    challenge:   '¿Cuál es tu mayor desafío ahora?\n\n1️⃣ Sueño & noches\n2️⃣ Berrinches\n3️⃣ Pantallas & límites\n4️⃣ Alimentación\n5️⃣ Escuela & tareas\n6️⃣ Otro (dímelo en pocas palabras)',
+    confirm:     '¡Perfecto! Última cosa — ¿quieres recibir:\n\n☀️ Un plan personalizado cada mañana a las 8\n🌙 Un check-in cada noche a las 21\n📋 Un resumen cada domingo\n\n*Responde SÍ o NO.* Puedes parar en cualquier momento con "stop".',
+    parseHelp:   'No pude leer la edad de tu hijo. ¿Puedes intentarlo de nuevo?',
+    fallbackOK:  '¡Empezamos! 🎉 Primer plan mañana a las 8am.',
+    fallbackKO:  'Sin problema, aquí estoy. Escribe "reprendre" para activar.',
+  },
+  pt: {
+    parentChild: 'Ótimo! Para começar, preciso de 2 coisas numa mensagem:\n\n*Seu nome + nome e idade do seu filho/a.*\n\nEx: "Sara, meu filho Carlos tem 3 anos"',
+    challenge:   'Qual é seu maior desafio agora?\n\n1️⃣ Sono & noites\n2️⃣ Birras\n3️⃣ Telas & limites\n4️⃣ Alimentação\n5️⃣ Escola & lições\n6️⃣ Outro (em poucas palavras)',
+    confirm:     'Perfeito! Última coisa — quer receber:\n\n☀️ Um plano personalizado toda manhã às 8h\n🌙 Um check-in toda noite às 21h\n📋 Um resumo todo domingo\n\n*Responda SIM ou NÃO.* Pode parar a qualquer momento com "stop".',
+    parseHelp:   'Não consegui ler a idade do seu filho. Pode tentar de novo?',
+    fallbackOK:  'Vamos lá! 🎉 Primeiro plano amanhã às 8h.',
+    fallbackKO:  'Sem problema, estou aqui. Escreva "reprendre" para ativar.',
+  },
 };
-
-// Langue par défaut si non reconnue
-const DEFAULT_LANG = 'fr';
 
 function getQ(lang, key) {
   return (Q[lang] || Q[DEFAULT_LANG])[key];
 }
 
-// ─── STEPS — step 0 = choix de langue, steps 1-7 = questions profil ───────────
+// ─── New 4-step flow (was 8) ─────────────────────────────────────────────────
 const STEPS = [
-  { step: 0, field: null },           // Choix de langue
-  { step: 1, field: 'parent.name' },  // Prénom parent
-  { step: 2, field: 'child_info' },   // Enfant
-  { step: 3, field: 'child_personality' },
-  { step: 4, field: 'child_special_needs' },
-  { step: 5, field: 'challenges' },
-  { step: 6, field: 'family_structure' },
-  { step: 7, field: 'cultural_context', action: 'GENERATE_PROGRAM' }
+  { step: 0, field: 'language' },                                  // Lang choice
+  { step: 1, field: 'parent_child' },                              // Parent + child + age
+  { step: 2, field: 'main_challenge' },                            // Numbered or free text
+  { step: 3, field: 'cron_confirm', action: 'GENERATE_PROGRAM' },  // YES/NO
 ];
 
-const personalityMap = {
-  '1': 'calme et facile', '2': 'énergique et curieux',
-  '3': 'sensible et émotif', '4': 'têtu et indépendant', '5': 'anxieux et collant'
+const CHALLENGE_MAP = {
+  '1': 'sommeil', '2': 'crises', '3': 'écrans',
+  '4': 'alimentation', '5': 'école',
 };
-const familyMap = {
-  '1': 'married', '2': 'single-parent', '3': 'co-parenting', '4': 'blended-family'
-};
+
 const langMap = {
   '1': 'fr', '2': 'ar', '3': 'es', '4': 'pt', '5': 'en',
   'fr': 'fr', 'français': 'fr', 'french': 'fr',
   'ar': 'ar', 'arabe': 'ar', 'arabic': 'ar', 'عربية': 'ar', 'عربي': 'ar',
   'es': 'es', 'español': 'es', 'spanish': 'es', 'espagnol': 'es',
   'pt': 'pt', 'português': 'pt', 'portuguese': 'pt', 'portugais': 'pt',
-  'en': 'en', 'english': 'en', 'anglais': 'en'
+  'en': 'en', 'english': 'en', 'anglais': 'en',
 };
 
-// ─── Start onboarding ─────────────────────────────────────────────────────────
+const YES_TOKENS = ['oui', 'yes', 'si', 'sí', 'sim', 'نعم', 'ok', 'okay', 'd\'accord', 'go', 'go!', 'allez'];
+
+// ─── Step 1 parser : extract parent + child + age from a single message ─────
+/**
+ * Parse a free-form "Sarah, mon fils Yassine a 3 ans" into structured fields.
+ *
+ * Strategy : age via regex, names via capitalized-word heuristic.
+ * Returns { parentName, childName, childAge, childAgeMonths } (any may be empty/0).
+ *
+ * Exported for unit tests.
+ */
+function parseStep1(text) {
+  const t = (text || '').trim();
+
+  // Age (years + months) — multilingual
+  const years  = t.match(/(\d+)\s*(?:ans?|year[s]?|سنة|سنين|عام|años?|anos?)/i);
+  const months = t.match(/(\d+)\s*(?:mois|month[s]?|شهر|شهور|mes(?:es)?|m[êe]s(?:es)?)/i);
+  const childAge = years ? parseInt(years[1], 10) : 0;
+  const childAgeMonths = childAge * 12 + (months ? parseInt(months[1], 10) : 0);
+
+  // Capitalized tokens — heuristic for prenoms (works for FR, EN, ES, PT; Arabic uses different cues)
+  const properNouns = (t.match(/\b[A-ZÀ-Ý][a-zà-ÿ'\-]{1,30}\b/gu) || [])
+    .filter(w => !/^(Mon|My|Mi|Meu|My)$/i.test(w)); // exclude possessives capitalized at start
+
+  // Arabic fallback : extract first 2 word-like sequences > 2 chars
+  if (properNouns.length === 0) {
+    const arabicWords = (t.match(/[؀-ۿ]{3,}/g) || []);
+    arabicWords.forEach(w => properNouns.push(w));
+  }
+
+  let parentName = properNouns[0] || '';
+  let childName  = properNouns[1] || '';
+
+  return {
+    parentName,
+    childName,
+    childAge,            // in years (rounded down) — for tests
+    childAgeMonths,      // precise age
+  };
+}
+
+// ─── Start onboarding ────────────────────────────────────────────────────────
 async function startOnboarding(phone) {
   setState(phone, { step: 'onboarding', onboarding_step: 0 });
-  await updateProfile(phone, { onboarding_step: 0, session_state: 'onboarding', language: DEFAULT_LANG });
+  await updateProfile(phone, {
+    onboarding_step: 0,
+    session_state:   'onboarding',
+    language:        DEFAULT_LANG
+  });
 
-  const welcome = `👋 Bonjour / مرحبا / Hola / Olá
+  const welcome = `👋 Bonjour / مرحبا / Hola / Olá / Hello
 
-Je suis ton *ParentAtEase* — Coach Parental IA 🍼
+Je suis *ParentAtEase* — ton coach parental 🌈
 
-📌 Pour te reconnecter : envoie *${JOIN_CODE}* au *+1 415 523 8886*
+📌 Pour me retrouver sur WhatsApp : envoie *${JOIN_CODE}* au *+1 415 523 8886*
 
 🌍 *Choisis ta langue / اختر لغتك :*
 
 1️⃣ Français
-2️⃣ العربية (Arabe)
+2️⃣ العربية
 3️⃣ Español
 4️⃣ Português
 5️⃣ English`;
@@ -119,19 +167,21 @@ Je suis ton *ParentAtEase* — Coach Parental IA 🍼
   await sendMessage(phone, welcome);
 }
 
-// ─── Handle onboarding message ────────────────────────────────────────────────
+// ─── Handle each incoming onboarding message ─────────────────────────────────
 async function handleOnboardingMessage(phone, text) {
-  const profile    = loadProfile(phone);
-  const currentStep = profile?.onboarding_step || 0;
+  const profile     = loadProfile(phone);
+  const currentStep = profile?.onboarding_step ?? 0;
   const lang        = profile?.language || DEFAULT_LANG;
 
   logger.info('Onboarding step', { phone, currentStep, lang });
 
-  await applyAnswer(phone, currentStep, text, profile);
+  const proceed = await applyAnswer(phone, currentStep, text, profile, lang);
+  if (!proceed) return true; // re-prompt same step (parse failed)
 
   const nextStep = currentStep + 1;
 
   if (nextStep >= STEPS.length || STEPS[nextStep]?.action === 'GENERATE_PROGRAM') {
+    // Final step already processed in applyAnswer — generate the welcome plan
     await generateAndSendProgram(phone);
     return false;
   }
@@ -139,121 +189,112 @@ async function handleOnboardingMessage(phone, text) {
   await updateProfile(phone, { onboarding_step: nextStep });
   setState(phone, { step: 'onboarding', onboarding_step: nextStep });
 
-  // Load updated profile to get language choice if just saved
-  const updatedProfile = loadProfile(phone);
-  const updatedLang    = updatedProfile?.language || DEFAULT_LANG;
-  const nextQuestion   = getNextQuestion(nextStep, updatedLang);
-  await sendMessage(phone, nextQuestion);
+  // Reload language in case step 0 just chose it
+  const upd     = loadProfile(phone);
+  const updLang = upd?.language || DEFAULT_LANG;
+  await sendMessage(phone, getNextQuestion(nextStep, updLang));
 
   return true;
 }
 
 function getNextQuestion(step, lang) {
   switch (step) {
-    case 1: return getQ(lang, 'name');
-    case 2: return getQ(lang, 'child');
-    case 3: return getQ(lang, 'personality');
-    case 4: return getQ(lang, 'special');
-    case 5: return getQ(lang, 'challenges');
-    case 6: return getQ(lang, 'family');
-    case 7: return getQ(lang, 'culture');
-    default: return getQ(lang, 'name');
+    case 1: return getQ(lang, 'parentChild');
+    case 2: return getQ(lang, 'challenge');
+    case 3: return getQ(lang, 'confirm');
+    default: return getQ(lang, 'parentChild');
   }
 }
 
-// ─── Apply answer ─────────────────────────────────────────────────────────────
-async function applyAnswer(phone, answeredStep, text, profile) {
+// ─── Apply answer ────────────────────────────────────────────────────────────
+/** Returns true if answer was accepted; false to re-prompt same step. */
+async function applyAnswer(phone, answeredStep, text, profile, lang) {
   const updates = { ...profile };
 
   switch (answeredStep) {
     case 0: {
-      // Language choice
-      const normalized = text.trim().toLowerCase();
-      const chosen = langMap[normalized] || langMap[text.trim()] || DEFAULT_LANG;
+      const normalized = (text || '').trim().toLowerCase();
+      const chosen = langMap[normalized] || langMap[text?.trim?.()] || DEFAULT_LANG;
       updates.language = chosen;
       break;
     }
+
     case 1: {
-      // Parent name
-      updates.parent = { ...(updates.parent || {}), name: text.trim() };
+      const parsed = parseStep1(text);
+      if (!parsed.childAgeMonths) {
+        // Couldn't extract age — re-prompt
+        await sendMessage(phone, getQ(lang, 'parseHelp'));
+        return false;
+      }
+      updates.parent = { ...(updates.parent || {}), name: parsed.parentName };
+      updates.children = [{
+        name:              parsed.childName,
+        age_months:        parsed.childAgeMonths,
+        personality:       '',
+        special_needs:     'none',
+        health_conditions: 'none',
+        in_school:         parsed.childAge >= 3,
+        screen_time_hours: 0,
+        sleep_bedtime:     '21:00',
+        sleep_wake:        '07:00',
+      }];
       break;
     }
+
     case 2: {
-      // Child info
-      const child = parseChildInfo(text);
-      updates.children = [child];
+      const t = (text || '').trim();
+      const mapped = CHALLENGE_MAP[t];
+      updates.challenges = [mapped || t]; // start with 1 main challenge; LLM enriches later
       break;
     }
+
     case 3: {
-      // Personality
-      const p = personalityMap[text.trim()] || text.trim();
-      if (updates.children?.[0]) updates.children[0].personality = p;
-      break;
-    }
-    case 4: {
-      // Special needs
-      const needs = ['aucun','لا','none','no'].includes(text.trim().toLowerCase()) ? 'none' : text.trim();
-      if (updates.children?.[0]) updates.children[0].special_needs = needs;
-      break;
-    }
-    case 5: {
-      // Challenges
-      updates.challenges = text.split(/[,\n]/).map(c => c.trim()).filter(Boolean);
-      break;
-    }
-    case 6: {
-      // Family structure
-      updates.parent = { ...(updates.parent || {}), family_structure: familyMap[text.trim()] || text.trim() };
-      break;
-    }
-    case 7: {
-      // Cultural context
-      updates.cultural_context = text.trim();
+      const t = (text || '').trim().toLowerCase();
+      const cronOn = YES_TOKENS.some(y => t.startsWith(y));
+      updates.cron_active = cronOn ? 1 : 0;
+      updates.onboarding_complete = 1;
+      updates.session_state = 'idle';
       break;
     }
   }
 
   await updateProfile(phone, updates);
+  return true;
 }
 
-function parseChildInfo(text) {
-  const child = {
-    name: '', age_months: 0, gender: 'unknown',
-    personality: '', special_needs: 'none',
-    health_conditions: 'none', in_school: false,
-    screen_time_hours: 0, sleep_bedtime: '21:00', sleep_wake: '07:00'
-  };
-  const nameMatch = text.match(/^([A-Za-zÀ-ÿا-ي\-]+)/u);
-  if (nameMatch) child.name = nameMatch[1];
-  const yearsMatch  = text.match(/(\d+)\s*(ans?|year|سنة|سنين|عام|عوام)/i);
-  const monthsMatch = text.match(/(\d+)\s*(mois|month|شهر|شهور|شهار)/i);
-  child.age_months = (yearsMatch ? parseInt(yearsMatch[1]) : 0) * 12
-                   + (monthsMatch ? parseInt(monthsMatch[1]) : 0);
-  return child;
-}
-
-// ─── Generate welcome program ─────────────────────────────────────────────────
+// ─── Generate welcome program ────────────────────────────────────────────────
 async function generateAndSendProgram(phone) {
   const profile = loadProfile(phone);
   const lang    = profile?.language || DEFAULT_LANG;
 
   await updateProfile(phone, {
-    onboarding_complete: true, cron_active: true,
-    session_state: 'idle', onboarding_step: STEPS.length
+    onboarding_complete: 1,
+    session_state:       'idle',
+    onboarding_step:     STEPS.length,
   });
   clearState(phone);
 
+  // If the user said NO to cron, send a soft fallback instead of generating a plan
+  if (!profile?.cron_active) {
+    await sendMessage(phone, getQ(lang, 'fallbackKO'));
+    return;
+  }
+
   const programPrompt = `
-PROFIL : ${JSON.stringify(profile, null, 2)}
+PROFIL : ${JSON.stringify({
+    parent:     profile.parent,
+    children:   profile.children,
+    challenges: profile.challenges,
+    language:   profile.language,
+  }, null, 2)}
 
-L'onboarding est terminé. Génère un message de bienvenue personnalisé qui :
-1. Confirme le profil (mentionne le prénom de l'enfant)
-2. Résume en 3 points les priorités à travailler
-3. Explique le rythme : plan du matin à 8h, bilan du soir à 21h, bilan hebdo le dimanche
-4. Termine avec : "Prêt(e) à commencer ? 💪"
+L'onboarding rapide est terminé (juste 3 questions). Génère un message de bienvenue qui :
+1. Confirme le prénom de l'enfant + son âge
+2. Dit qu'on va commencer par le défi principal mentionné
+3. Explique brièvement le rythme (plan 8h, check-in 21h, bilan dimanche)
+4. Termine par "Prêt(e) ? 💪"
 
-Max 200 mots. Langue OBLIGATOIRE : ${lang}.
-Si langue = "ar" ou "darija" → écris en arabe/darija.
+Max 150 mots. Langue OBLIGATOIRE : ${lang}.
 Pas de markdown complexe (WhatsApp).
   `.trim();
 
@@ -262,14 +303,13 @@ Pas de markdown complexe (WhatsApp).
     await sendMessage(phone, message);
   } catch (err) {
     logger.error('Failed to generate welcome program', { phone, error: err.message });
-    const fallbacks = {
-      fr: `Parfait ! Ton profil est créé. Premier plan demain matin à 8h. 🌟`,
-      ar: `تم إنشاء ملفك الشخصي. سأرسل لك أول خطة غداً الساعة 8 صباحاً. 🌟`,
-      darija: `تم! كيفاشك؟ غدا الساعة 8 كنسيفطلك أول خطة. 🌟`,
-      en: `Profile created! Your first morning plan is tomorrow at 8am. 🌟`
-    };
-    await sendMessage(phone, fallbacks[lang] || fallbacks.fr);
+    await sendMessage(phone, getQ(lang, 'fallbackOK'));
   }
 }
 
-module.exports = { startOnboarding, handleOnboardingMessage };
+module.exports = {
+  startOnboarding,
+  handleOnboardingMessage,
+  parseStep1,         // exported for tests
+  STEPS,              // exported so consumers can introspect the flow length
+};

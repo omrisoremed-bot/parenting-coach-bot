@@ -72,3 +72,32 @@ test('all critical service modules load without throwing', () => {
   assert.doesNotThrow(() => require('../handlers/profileLoader'));
   assert.doesNotThrow(() => require('../handlers/messageHandler'));
 });
+
+// ─── Onboarding step-1 parser extracts parent + child age ───────────────────
+test('parseStep1 extracts parent name and child age from free text', () => {
+  const { parseStep1 } = require('../handlers/onboardingFlow');
+
+  const r1 = parseStep1('Sarah, mon fils Yassine a 3 ans');
+  assert.equal(r1.parentName, 'Sarah');
+  assert.equal(r1.childAge, 3);
+  assert.equal(r1.childAgeMonths, 36);
+
+  const r2 = parseStep1('Aïcha — Lina, 18 mois');
+  assert.equal(r2.parentName, 'Aïcha');
+  assert.equal(r2.childAgeMonths, 18);
+
+  const r3 = parseStep1('Marie, ma fille Lila a 2 ans et 4 mois');
+  assert.equal(r3.parentName, 'Marie');
+  assert.equal(r3.childAgeMonths, 28);
+
+  // Edge case : age missing → ageMonths = 0 (caller will re-prompt)
+  const r4 = parseStep1('Just a name with no age');
+  assert.equal(r4.childAgeMonths, 0);
+});
+
+// ─── Onboarding STEPS array reflects the 3+1 (lang) flow ────────────────────
+test('onboarding STEPS array has exactly 4 entries (lang + 3 questions)', () => {
+  const { STEPS } = require('../handlers/onboardingFlow');
+  assert.equal(STEPS.length, 4, 'Flow should be: lang -> parent/child -> challenge -> confirm');
+  assert.equal(STEPS[3].action, 'GENERATE_PROGRAM');
+});
