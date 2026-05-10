@@ -10,7 +10,11 @@
     "migrate": "node scripts/migrate-json-to-sqlite.js",
     "article": "node scripts/generate-article.js",
     "social": "node scripts/article-to-social.js",
+    "weekly": "node scripts/weekly-content.js",
     "knowledge:build": "node scripts/build-knowledge-cache.js",
+    "seo:sitemap": "node scripts/generate-sitemap.js",
+    "seo:jsonld": "node scripts/inject-jsonld.js",
+    "seo:all": "npm run seo:jsonld && npm run seo:sitemap",
     "test": "node --test tests/"
   },
   "engines": {

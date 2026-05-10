@@ -53,14 +53,27 @@ function loadKnowledgeBase() {
 const OpenAI = require('openai');
 const logger = require('./logger');
 
-// NVIDIA NIM defaults — mistral-large = meilleur modèle gratuit pour le français + raisonnement
-const DEFAULT_BASE_URL = 'https://integrate.api.nvidia.com/v1';
-const DEFAULT_MODEL    = 'mistralai/mistral-large-2-instruct';
+/**
+ * Provider : OpenAI-compatible uniquement (OpenAI direct, NVIDIA NIM, Groq, OpenRouter…).
+ *
+ * Pour utiliser l'API OpenAI officielle (avec automatic prompt caching depuis nov 2024) :
+ *   AI_BASE_URL=https://api.openai.com/v1
+ *   AI_MODEL=gpt-4o-mini       (ou gpt-4o)
+ *   AI_API_KEY=sk-proj-...
+ *
+ * OpenAI fait du prefix caching automatique pour tout prompt ≥ 1024 tokens —
+ * 50% de réduction sur les tokens cachés, sans cache_control à gérer.
+ * Garder le system prompt (knowledge base) strictement stable d'un appel à l'autre.
+ */
+
+// Défaut : OpenAI officiel (la knowledge base de 131K chars bénéficie du prefix caching auto).
+const DEFAULT_BASE_URL = 'https://api.openai.com/v1';
+const DEFAULT_MODEL    = 'gpt-4o-mini';
 
 const MAX_TOKENS   = 1024;
-const MAX_HISTORY  = 10;  // keep last N turns to avoid token bloat
+const MAX_HISTORY  = 10;
 const MAX_RETRIES  = 3;
-const RETRY_DELAY  = 1500; // ms base delay (doubles each attempt)
+const RETRY_DELAY  = 1500;
 
 let _client = null;
 
@@ -109,9 +122,12 @@ async function callAI(systemPrompt, userMessage, history = []) {
   const client = getClient();
   const model  = getModel();
 
-  // Trim history to avoid hitting token limits
   const trimmedHistory = history.slice(-MAX_HISTORY);
 
+  // IMPORTANT pour le prefix caching automatique d'OpenAI :
+  // - Le system prompt doit être le PREMIER message et STABLE entre les appels.
+  // - Toute variation dans systemPrompt (même 1 caractère) invalide le cache.
+  // - Cache hit = 50% de réduction sur ces tokens (visible dans response.usage).
   const messages = [
     { role: 'system', content: systemPrompt },
     ...trimmedHistory,
@@ -119,7 +135,7 @@ async function callAI(systemPrompt, userMessage, history = []) {
   ];
 
   logger.debug('AI call', {
-    provider: process.env.AI_BASE_URL || DEFAULT_BASE_URL,
+    baseURL: process.env.AI_BASE_URL || DEFAULT_BASE_URL,
     model,
     historyLen: trimmedHistory.length
   });
@@ -130,27 +146,32 @@ async function callAI(systemPrompt, userMessage, history = []) {
       const response = await client.chat.completions.create({
         model,
         messages,
-        max_tokens:   MAX_TOKENS,
-        temperature:  0.7,
-        top_p:        0.95
+        max_tokens:  MAX_TOKENS,
+        temperature: 0.7,
+        top_p:       0.95
       });
 
       const text = response.choices[0]?.message?.content || '';
-      logger.debug('AI response', {
-        chars:      text.length,
-        stopReason: response.choices[0]?.finish_reason,
-        attempt
-      });
+
+      // Log usage + cache metrics (OpenAI renvoie cached_tokens depuis nov 2024)
+      if (response.usage) {
+        logger.info('AI usage', {
+          prompt_tokens:        response.usage.prompt_tokens,
+          completion_tokens:    response.usage.completion_tokens,
+          cached_tokens:        response.usage.prompt_tokens_details?.cached_tokens || 0,
+          model,
+          finish_reason:        response.choices[0]?.finish_reason
+        });
+      }
 
       return text;
 
     } catch (err) {
       lastErr = err;
       if (isRetryable(err) && attempt < MAX_RETRIES) {
-        const delay = RETRY_DELAY * Math.pow(2, attempt - 1); // 1.5s, 3s, 6s
+        const delay = RETRY_DELAY * Math.pow(2, attempt - 1);
         logger.warn(`AI call failed (attempt ${attempt}/${MAX_RETRIES}), retrying in ${delay}ms`, {
-          error: err.message,
-          status: err?.status
+          error: err.message, status: err?.status
         });
         await sleep(delay);
       } else {
