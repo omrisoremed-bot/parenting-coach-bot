@@ -9,6 +9,7 @@
     "dev": "nodemon bot.js",
     "migrate": "node scripts/migrate-json-to-sqlite.js",
     "db:migrate-volume": "node scripts/migrate-db-to-volume.js",
+    "backup:sqlite": "node scripts/backup-sqlite.js",
     "article": "node scripts/generate-article.js",
     "social": "node scripts/article-to-social.js",
     "weekly": "node scripts/weekly-content.js",
@@ -23,6 +24,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1045.0",
     "axios": "^1.7.0",
     "better-sqlite3": "^12.8.0",
     "cors": "^2.8.6",
