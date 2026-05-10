@@ -15,6 +15,7 @@
     "seo:sitemap": "node scripts/generate-sitemap.js",
     "seo:jsonld": "node scripts/inject-jsonld.js",
     "seo:all": "npm run seo:jsonld && npm run seo:sitemap",
+    "security:check-leaks": "node scripts/check-key-leaks.js",
     "test": "node --test tests/"
   },
   "engines": {
