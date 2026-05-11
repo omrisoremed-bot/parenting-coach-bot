@@ -8,6 +8,7 @@ const { callAI, buildConversationPrompt } = require('../services/aiService');
 const { systemPrompt } = require('../services/promptBuilder');
 const { logMessage, getDb, getActiveSubscription } = require('../services/database');
 const stripe  = require('../services/stripeService');
+const memory = require('../services/memoryService');
 const logger = require('../services/logger');
 
 // ─── Commands ────────────────────────────────────────────────────────────────
@@ -186,10 +187,19 @@ async function handleConversation(phone, text, profile) {
       logger.warn('history fetch failed — responding without context', { phone, error: histErr.message });
     }
 
+    // ── Inject long-term memory into the system prompt (B3) ─────────────────
+    const memoryBlock = memory.getMemoryContext(phone);
+    const enrichedSystemPrompt = memoryBlock
+      ? systemPrompt + memoryBlock
+      : systemPrompt;
+
     const prompt = buildConversationPrompt(profile, text);
-    const reply  = await callAI(systemPrompt, prompt, history);
+    const reply  = await callAI(enrichedSystemPrompt, prompt, history);
     logMessage(phone, 'assistant', reply);
     await sendMessage(phone, reply);
+
+    // ── Fire-and-forget memory extraction (post-response, async) ────────────
+    memory.extractAndStoreMemory(phone, text, reply).catch(() => {});
   } catch (err) {
     logger.error('AI conversation error', { phone, error: err.message });
     await sendMessage(

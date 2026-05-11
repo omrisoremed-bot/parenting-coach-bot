@@ -101,3 +101,30 @@ test('onboarding STEPS array has exactly 4 entries (lang + 3 questions)', () => 
   assert.equal(STEPS.length, 4, 'Flow should be: lang -> parent/child -> challenge -> confirm');
   assert.equal(STEPS[3].action, 'GENERATE_PROGRAM');
 });
+
+// ─── Vault writes and reads memories (B3) ───────────────────────────────────
+test('vaultService stores and reads memories with dedup', () => {
+  const vault = require('../services/vaultService');
+  const phone = '+33600000999';
+  const fact1 = 'Test fact ' + Date.now();
+  const fact2 = 'Other fact ' + Date.now();
+
+  vault.appendMemory(phone, fact1);
+  vault.appendMemory(phone, fact2);
+  vault.appendMemory(phone, fact1); // duplicate — should be skipped silently
+
+  const memories = vault.readMemories(phone);
+  assert.ok(memories.includes(fact1), 'fact1 should be present');
+  assert.ok(memories.includes(fact2), 'fact2 should be present');
+
+  // Count occurrences of fact1 — must be exactly 1 (dedup works)
+  const count = (memories.match(new RegExp(fact1.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+  assert.equal(count, 1, 'duplicate fact should only appear once');
+});
+
+// ─── Memory injection returns empty when no memories ────────────────────────
+test('memoryService.getMemoryContext returns empty for new user', () => {
+  const memory = require('../services/memoryService');
+  const ctx = memory.getMemoryContext('+33700000000-never-seen-' + Date.now());
+  assert.equal(ctx, '', 'fresh user should get empty memory block');
+});

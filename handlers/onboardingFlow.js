@@ -25,6 +25,7 @@ const { setState, clearState } = require('../services/sessionManager');
 const { sendMessage } = require('../services/messengerAdapter');
 const { callAI } = require('../services/aiService');
 const { systemPrompt } = require('../services/promptBuilder');
+const memory = require('../services/memoryService');
 const logger = require('../services/logger');
 
 const JOIN_CODE    = process.env.SANDBOX_JOIN_CODE || 'join on-help';
@@ -273,6 +274,9 @@ async function generateAndSendProgram(phone) {
     onboarding_step:     STEPS.length,
   });
   clearState(phone);
+
+  // Sync profile to the markdown vault (B3 — long-term memory)
+  try { memory.syncProfileToVault(phone, loadProfile(phone)); } catch {}
 
   // If the user said NO to cron, send a soft fallback instead of generating a plan
   if (!profile?.cron_active) {
