@@ -28,6 +28,11 @@ app.use('/api', cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// ─── Stripe webhook (RAW body — must be mounted BEFORE express.json) ────────
+// The webhook router uses express.raw() internally to receive Buffer for HMAC.
+const { router: billingRouter, webhookRouter: billingWebhookRouter } = require('./handlers/billingHandler');
+app.use('/api/billing/webhook', billingWebhookRouter);
+
 // ─── Body parsers ────────────────────────────────────────────────────────────
 // Capture rawBody pour la vérification HMAC Meta
 app.use(express.json({
@@ -300,6 +305,11 @@ app.use('/admin', adminRouter);
 // ─── Webapp API (Phase 2) ────────────────────────────────────────────────────
 const webappApiRouter = require('./handlers/webappApi');
 app.use('/api', webappApiRouter);
+
+// ─── Billing (Stripe Checkout + Portal + Status) — auth required via webapp session ──
+// Webhook is mounted separately above (needs raw body).
+const { requireSession } = require('./handlers/webappApi');
+app.use('/api/billing', requireSession, billingRouter);
 
 // ─── Webapp static files (Phase 2) ───────────────────────────────────────────
 const path = require('path');

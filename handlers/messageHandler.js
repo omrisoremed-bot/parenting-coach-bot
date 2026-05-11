@@ -6,7 +6,8 @@ const { startOnboarding, handleOnboardingMessage } = require('./onboardingFlow')
 const { sendMessage } = require('../services/messengerAdapter');
 const { callAI, buildConversationPrompt } = require('../services/aiService');
 const { systemPrompt } = require('../services/promptBuilder');
-const { logMessage, getDb } = require('../services/database');
+const { logMessage, getDb, getActiveSubscription } = require('../services/database');
+const stripe  = require('../services/stripeService');
 const logger = require('../services/logger');
 
 // ─── Commands ────────────────────────────────────────────────────────────────
@@ -100,8 +101,63 @@ async function messageHandler(phone, text) {
     return;
   }
 
+  // ── 3.5 Paywall gate (post-onboarding only) ───────────────────────────────
+  // Skip in dev / when Stripe not configured (graceful degradation).
+  // Trial users (status='trialing') pass thanks to getActiveSubscription.
+  if (stripe.isEnabled() && !getActiveSubscription(phone)) {
+    await sendPaywallMessage(phone, profile);
+    return;
+  }
+
   // ── 4. Default: free-form AI conversation ─────────────────────────────────
   await handleConversation(phone, normalizedText, profile);
+}
+
+// ─── Paywall message (sent when user has no active subscription) ────────────
+const PAYWALL_BY_LANG = {
+  fr: (link) => `🌿 Pour continuer à recevoir des conseils personnalisés, choisis ta formule :
+
+*Famille* — 9,90 €/mois (essai 7 jours)
+*Atelier* — 24,90 €/mois (+ appel humain mensuel)
+
+👉 ${link}
+
+Tu peux annuler à tout moment.`,
+  en: (link) => `🌿 To keep receiving personalized advice, pick your plan:
+
+*Family* — €9.90/month (7-day trial)
+*Workshop* — €24.90/month (+ monthly human call)
+
+👉 ${link}
+
+Cancel anytime.`,
+  es: (link) => `🌿 Para seguir recibiendo consejos personalizados, elige tu plan:
+
+*Familia* — 9,90 €/mes (prueba 7 días)
+*Taller* — 24,90 €/mes (+ llamada humana mensual)
+
+👉 ${link}`,
+  pt: (link) => `🌿 Para continuar a receber conselhos personalizados, escolha seu plano:
+
+*Família* — 9,90 €/mês (teste 7 dias)
+*Atelier* — 24,90 €/mês (+ chamada humana mensal)
+
+👉 ${link}`,
+  ar: (link) => `🌿 لمواصلة تلقي النصائح المخصصة، اختر باقتك:
+
+*عائلة* — 9.90 € / شهر (تجربة 7 أيام)
+*ورشة* — 24.90 € / شهر (+ مكالمة بشرية شهرية)
+
+👉 ${link}`,
+};
+
+async function sendPaywallMessage(phone, profile) {
+  const lang = profile?.language || 'fr';
+  const checkoutUrl = (process.env.WEBAPP_PUBLIC_URL || 'https://parentatease.com')
+    + '/webapp/?paywall=1';
+  const builder = PAYWALL_BY_LANG[lang] || PAYWALL_BY_LANG.fr;
+  await sendMessage(phone, builder(checkoutUrl));
+  logger.info('Paywall shown', { phone, lang });
 }
 
 // Nombre de tours de conversation injectés dans le contexte IA (user + assistant)

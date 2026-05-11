@@ -510,7 +510,8 @@ strong{font-weight:800;color:var(--ink)}
 
 /* ─── PRICING ──────────────────────────────────── */
 .section.pricing{background:linear-gradient(180deg,var(--cream-deep) 0%,var(--cream) 100%)}
-.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem;align-items:start}
+.price-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2rem;align-items:start;max-width:920px;margin-inline:auto}
+.price-card .trial-badge{display:inline-block;background:var(--mint);color:var(--ink);padding:.25rem .65rem;border-radius:999px;font-family:var(--display);font-size:.75rem;font-weight:600;border:1.5px solid var(--ink);margin-bottom:.8rem;box-shadow:0 2px 0 var(--ink)}
 .price-card{
   background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-xl);
   padding:2rem 1.8rem;position:relative;
@@ -1075,59 +1076,50 @@ footer{background:var(--ink);color:var(--cream);padding:4rem 0 2rem}
 <section class="section pricing" id="offres">
   <div class="wrap">
     <div class="section-head">
-      <span class="kicker"><span class="dot"></span> Tarifs simples</span>
-      <h2>3 formules. <span class="marker">Zéro engagement.</span></h2>
-      <p>Tu commences gratuitement. Tu passes payant uniquement si tu sens que ça te change la vie.</p>
+      <span class="kicker"><span class="dot"></span> 2 formules · essai 7 jours</span>
+      <h2>Tu commences par <span class="marker">7 jours gratuits</span>.</h2>
+      <p>Pas de carte coupée avant la fin de l'essai. Annulable à tout moment en 1 clic depuis ton dashboard. Aucune pub.</p>
     </div>
 
     <div class="price-grid">
 
-      <article class="price-card">
-        <div class="pname">Liberté</div>
-        <p class="pblurb">Pour goûter avant de t'engager.</p>
-        <div class="price">0<small>€</small></div>
-        <div class="perio">à vie</div>
-        <ul>
-          <li>1 enfant suivi</li>
-          <li>1 plan matinal /jour</li>
-          <li>5 conversations /jour</li>
-          <li>5 jeux /mois</li>
-          <li>Accès au blog complet</li>
-        </ul>
-        <a href="#cta" class="btn btn-ghost pcta">Commencer →</a>
-      </article>
-
       <article class="price-card popular">
+        <span class="trial-badge">🎁 Essai 7 jours</span>
         <div class="pname">Famille</div>
         <p class="pblurb">Le rythme complet, pour toute la maison.</p>
         <div class="price">9,90<small>€/mois</small></div>
         <div class="perio">ou 79€/an · -33%</div>
         <ul>
           <li>Enfants illimités</li>
-          <li>Plans &amp; conversations sans limite</li>
-          <li>Check-in soir + bilan dimanche</li>
+          <li>Plans matinaux &amp; conversations sans limite</li>
+          <li>Check-in soir + bilan du dimanche</li>
           <li><strong>60 jeux parent-enfant</strong></li>
           <li>Export PDF mensuel</li>
         </ul>
-        <a href="#cta" class="btn btn-coral pcta">S'abonner →</a>
+        <a href="/webapp/?signup=family_monthly" class="btn btn-coral pcta">Démarrer l'essai →</a>
       </article>
 
       <article class="price-card">
+        <span class="trial-badge">🎁 Essai 7 jours</span>
         <div class="pname">Atelier</div>
-        <p class="pblurb">Pour les passages plus durs.</p>
+        <p class="pblurb">Pour les passages plus durs — humain inclus.</p>
         <div class="price">24,90<small>€/mois</small></div>
         <div class="perio">ou 199€/an · -33%</div>
         <ul>
           <li>Tout l'abonnement Famille</li>
-          <li><strong>1 appel humain /mois</strong> (30 min)</li>
-          <li>Groupe WhatsApp privé par âge</li>
-          <li>Cartes jeux imprimables</li>
-          <li>Bilan mensuel personnalisé</li>
+          <li><strong>1 appel humain /mois</strong> (30 min · coach certifié)</li>
+          <li>Groupe WhatsApp privé par tranche d'âge</li>
+          <li>Cartes jeux imprimables (PDF haute qualité)</li>
+          <li>Bilan mensuel personnalisé par email</li>
         </ul>
-        <a href="#cta" class="btn btn-primary pcta">Réserver →</a>
+        <a href="/webapp/?signup=atelier_monthly" class="btn btn-primary pcta">Démarrer l'essai →</a>
       </article>
 
     </div>
+
+    <p style="text-align:center;margin-top:1.8rem;font-size:.9rem;color:var(--ink-soft);font-weight:600">
+      💳 Paiement sécurisé via Stripe · TVA incluse · Annulable en 1 clic
+    </p>
   </div>
 </section>
 

@@ -111,6 +111,25 @@ function getDb() {
       processed_at TEXT    NOT NULL DEFAULT (datetime('now'))
     );
     CREATE INDEX IF NOT EXISTS idx_processed_at ON processed_message_ids(processed_at);
+
+    -- ── Billing (Stripe subscriptions) ──────────────────────────────────────
+    -- One row per user. Updated by Stripe webhook (handlers/billingHandler.js).
+    -- status values mirror Stripe: trialing|active|past_due|canceled|incomplete|...
+    CREATE TABLE IF NOT EXISTS subscriptions (
+      phone               TEXT    PRIMARY KEY REFERENCES users(phone) ON DELETE CASCADE,
+      stripe_customer_id  TEXT    NOT NULL UNIQUE,
+      stripe_subscription_id TEXT NOT NULL UNIQUE,
+      tier                TEXT    NOT NULL,        -- 'family' | 'atelier'
+      status              TEXT    NOT NULL,        -- Stripe subscription.status
+      cadence             TEXT    NOT NULL,        -- 'monthly' | 'yearly'
+      current_period_end  TEXT,                    -- ISO timestamp
+      trial_end           TEXT,                    -- ISO timestamp, null if past
+      cancel_at_period_end INTEGER NOT NULL DEFAULT 0,
+      created_at          TEXT    NOT NULL DEFAULT (datetime('now')),
+      updated_at          TEXT    NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_sub_status   ON subscriptions(status);
+    CREATE INDEX IF NOT EXISTS idx_sub_customer ON subscriptions(stripe_customer_id);
   `);
 
   // ── One-shot data migration : onboarding 8→3 steps (2026-05-10) ─────────────
@@ -143,4 +162,67 @@ function logMessage(phone, role, content) {
   }
 }
 
-module.exports = { getDb, DB_PATH, logMessage };
+/**
+ * Check whether a user has an active (paid or trialing) subscription.
+ * Returns the subscription row if active, null otherwise.
+ *
+ * Active = status in ('trialing','active','past_due') AND not yet expired.
+ * 'past_due' is included to give a 7-day grace period for failed payment
+ * recovery (Stripe Smart Retries handles this).
+ */
+function getActiveSubscription(phone) {
+  try {
+    const row = getDb()
+      .prepare(`
+        SELECT * FROM subscriptions
+        WHERE phone = ?
+          AND status IN ('trialing','active','past_due')
+          AND (current_period_end IS NULL OR current_period_end > datetime('now', '-7 days'))
+        LIMIT 1
+      `)
+      .get(phone);
+    return row || null;
+  } catch (err) {
+    logger.warn('getActiveSubscription failed', { phone, error: err.message });
+    return null;
+  }
+}
+
+/**
+ * Upsert subscription row (called from Stripe webhook).
+ */
+function upsertSubscription(sub) {
+  const db = getDb();
+  db.prepare(`
+    INSERT INTO subscriptions (
+      phone, stripe_customer_id, stripe_subscription_id, tier, status,
+      cadence, current_period_end, trial_end, cancel_at_period_end, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    ON CONFLICT(phone) DO UPDATE SET
+      stripe_customer_id     = excluded.stripe_customer_id,
+      stripe_subscription_id = excluded.stripe_subscription_id,
+      tier                   = excluded.tier,
+      status                 = excluded.status,
+      cadence                = excluded.cadence,
+      current_period_end     = excluded.current_period_end,
+      trial_end              = excluded.trial_end,
+      cancel_at_period_end   = excluded.cancel_at_period_end,
+      updated_at             = datetime('now')
+  `).run(
+    sub.phone, sub.stripe_customer_id, sub.stripe_subscription_id,
+    sub.tier, sub.status, sub.cadence,
+    sub.current_period_end || null, sub.trial_end || null,
+    sub.cancel_at_period_end ? 1 : 0
+  );
+}
+
+function findSubscriptionByCustomerId(customerId) {
+  return getDb()
+    .prepare('SELECT * FROM subscriptions WHERE stripe_customer_id = ?')
+    .get(customerId);
+}
+
+module.exports = {
+  getDb, DB_PATH, logMessage,
+  getActiveSubscription, upsertSubscription, findSubscriptionByCustomerId,
+};

@@ -232,4 +232,6 @@ router.get('/history', requireSession, (req, res) => {
   return res.json({ messages: rows.reverse() });
 });
 
+// Export the router itself + the auth middleware (used by billingHandler too)
 module.exports = router;
+module.exports.requireSession = requireSession;
