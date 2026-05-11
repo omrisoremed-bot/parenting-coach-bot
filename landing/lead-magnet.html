@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Guide gratuit · 50 phrases qui apaisent un enfant en crise — ParentAtEase</title>
+<meta name="description" content="Reçois gratuitement par email le guide de 50 phrases concrètes (avec le pourquoi et le piège à éviter) pour apaiser un enfant en crise. Sans pub, sans spam." />
+<link rel="canonical" href="https://parentatease.netlify.app/lead-magnet.html" />
+
+<meta property="og:title" content="50 phrases qui apaisent un enfant en crise · Guide gratuit" />
+<meta property="og:description" content="Quoi dire (et quoi ne pas dire) à ton enfant pendant une crise. 50 phrases concrètes basées sur 9 sources scientifiques." />
+<meta property="og:type" content="website" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sun:#FFC93C;--coral:#FF6B9D;--coral-deep:#E84A7E;--sky:#4ECDC4;--mint:#95E1D3;
+  --lav:#B5A8FF;--cream:#FFFAEC;--cream-deep:#FFF1D6;--paper:#fff;
+  --ink:#2D3047;--ink-soft:#5C5F7C;--ink-faded:#9799B5;
+  --display:"Fredoka","Nunito",system-ui,sans-serif;
+  --body:"Nunito",system-ui,sans-serif;
+  --hand:"Caveat",cursive;
+}
+html{background:var(--cream);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--coral-deep)}
+
+/* ─── Background blobs ─── */
+body{position:relative;overflow-x:hidden;min-height:100vh}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.35;z-index:0;pointer-events:none}
+
+/* ─── Top bar ─── */
+.bar{padding:1.4rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:5}
+.brand{display:flex;align-items:center;gap:.5rem;color:var(--ink);text-decoration:none;font-family:var(--display);font-weight:700;font-size:1.35rem}
+.brand-icon{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--sun) 0%,var(--coral) 50%,var(--sky) 100%);display:grid;place-items:center;font-size:1.2rem;box-shadow:0 3px 0 var(--ink);transform:rotate(-6deg)}
+.brand b em{font-style:normal;color:var(--coral-deep)}
+.bar a.back{font-family:var(--body);font-weight:600;font-size:.92rem;color:var(--ink-soft);text-decoration:none}
+
+/* ─── Hero + form ─── */
+.wrap{max-width:1080px;margin:0 auto;padding:2rem 1.5rem 5rem;display:grid;grid-template-columns:1.15fr .85fr;gap:3rem;align-items:center;position:relative;z-index:2}
+@media (max-width:880px){.wrap{grid-template-columns:1fr;padding-top:1rem}}
+
+.left .badge{display:inline-flex;align-items:center;gap:.5rem;background:var(--paper);border:2px solid var(--ink);padding:.45rem 1rem;border-radius:999px;font-family:var(--display);font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 4px 0 rgba(45,48,71,.12);margin-bottom:1.5rem}
+.left .badge .dot{width:8px;height:8px;border-radius:50%;background:var(--coral)}
+.left h1{font-family:var(--display);font-weight:600;font-size:clamp(2.4rem,5.5vw,3.8rem);line-height:1.05;letter-spacing:-.01em;margin-bottom:1.2rem}
+.left h1 .marker{background:var(--mint);padding:0 .2em;border-radius:8px;display:inline-block;transform:rotate(-1deg)}
+.left h1 .scribble{font-family:var(--hand);color:var(--coral-deep);font-weight:700;display:inline-block;transform:rotate(-3deg);font-size:1em}
+.left .lede{font-size:1.1rem;color:var(--ink-soft);max-width:46ch;margin-bottom:1.8rem;line-height:1.6}
+.left .lede strong{color:var(--ink);font-weight:700}
+
+.checks{list-style:none;padding:0;margin-bottom:2rem}
+.checks li{display:flex;gap:.7rem;font-size:.97rem;font-weight:600;padding:.4rem 0;color:var(--ink-soft)}
+.checks li::before{content:"✓";flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--mint);border:2px solid var(--ink);display:grid;place-items:center;color:var(--coral-deep);font-weight:800;font-size:.85rem}
+.checks li strong{color:var(--ink);font-weight:700}
+
+.trust-row{display:flex;align-items:center;gap:1rem;padding-top:1.4rem;border-top:2px dashed rgba(45,48,71,.12);margin-top:.5rem}
+.trust-row .face-stack{display:flex}
+.trust-row .face{width:34px;height:34px;border-radius:50%;border:2.5px solid var(--cream);display:grid;place-items:center;font-size:.95rem;margin-left:-8px;font-family:var(--display);font-weight:700}
+.trust-row .face:first-child{margin-left:0}
+.trust-row .face:nth-child(1){background:var(--coral);color:#fff}
+.trust-row .face:nth-child(2){background:var(--sun);color:var(--ink)}
+.trust-row .face:nth-child(3){background:var(--sky);color:#fff}
+.trust-row .face:nth-child(4){background:var(--lav);color:#fff}
+.trust-row .meta{font-size:.85rem;color:var(--ink-soft);line-height:1.4;font-weight:600}
+.trust-row .stars{color:#F5A623;letter-spacing:1px;font-size:.95rem;display:block}
+
+/* ─── Form card ─── */
+.form-card{background:var(--paper);border:3px solid var(--ink);border-radius:28px;padding:2rem 1.8rem;box-shadow:0 12px 0 var(--ink);transform:rotate(.5deg);position:relative}
+.form-card::before{content:"📖";position:absolute;top:-18px;right:1.5rem;width:48px;height:48px;border-radius:50%;background:var(--sun);border:2.5px solid var(--ink);display:grid;place-items:center;font-size:1.5rem;box-shadow:0 4px 0 var(--ink);transform:rotate(-12deg)}
+.form-card h2{font-family:var(--display);font-weight:600;font-size:1.5rem;margin-bottom:.5rem;line-height:1.2}
+.form-card p.sub{color:var(--ink-soft);font-size:.92rem;margin-bottom:1.4rem;font-weight:600}
+.form-card label{display:block;font-family:var(--display);font-weight:600;font-size:.85rem;color:var(--ink);margin-bottom:.4rem;margin-top:1rem}
+.form-card input{width:100%;padding:.85rem 1rem;font-family:var(--body);font-size:1rem;border:2.5px solid var(--ink);border-radius:14px;background:var(--cream);transition:transform .15s ease, box-shadow .15s ease;box-shadow:0 3px 0 var(--ink)}
+.form-card input:focus{outline:none;transform:translateY(-1px);box-shadow:0 5px 0 var(--ink);background:#fff}
+.form-card button{width:100%;margin-top:1.5rem;padding:1rem;background:var(--coral);color:#fff;border:none;border-radius:999px;font-family:var(--display);font-weight:600;font-size:1.05rem;cursor:pointer;box-shadow:0 5px 0 var(--coral-deep);transition:transform .15s, box-shadow .15s}
+.form-card button:hover{transform:translateY(-2px);box-shadow:0 7px 0 var(--coral-deep)}
+.form-card button:active{transform:translateY(2px);box-shadow:0 3px 0 var(--coral-deep)}
+.form-card button:disabled{opacity:.7;cursor:wait}
+.form-card .privacy{margin-top:1rem;font-size:.78rem;color:var(--ink-faded);text-align:center;line-height:1.5}
+.form-card .privacy a{color:var(--ink-soft)}
+.form-card .success{margin-top:1rem;padding:1rem;background:var(--mint);border:2px solid var(--ink);border-radius:14px;text-align:center;font-weight:700;color:var(--ink);display:none}
+.form-card .error{margin-top:1rem;padding:.8rem;background:#ffe5e5;border:2px solid var(--coral-deep);border-radius:14px;text-align:center;font-weight:600;color:var(--coral-deep);font-size:.9rem;display:none}
+
+/* ─── What's inside (preview) ─── */
+.preview{background:var(--paper);max-width:1080px;margin:0 auto;padding:3rem 1.5rem;position:relative;z-index:2}
+.preview h2{font-family:var(--display);font-weight:600;font-size:1.8rem;text-align:center;margin-bottom:.5rem;line-height:1.2}
+.preview h2 .marker{background:var(--sun);padding:0 .25em;border-radius:8px;display:inline-block}
+.preview p.sub{text-align:center;color:var(--ink-soft);margin-bottom:2.5rem;font-weight:600}
+.cats{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem}
+@media (max-width:880px){.cats{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.cats{grid-template-columns:1fr}}
+.cat{background:var(--cream);border:2.5px solid var(--ink);border-radius:18px;padding:1.2rem;text-align:center;box-shadow:0 5px 0 var(--ink);transition:transform .2s}
+.cat:hover{transform:translateY(-3px) rotate(-1deg)}
+.cat .icon{font-size:2.2rem;display:block;margin-bottom:.5rem}
+.cat .n{font-family:var(--display);font-weight:600;font-size:1rem;margin-bottom:.4rem;line-height:1.2}
+.cat .count{font-size:.78rem;color:var(--ink-soft);font-weight:600}
+.cat:nth-child(1){background:#FFF9E0}
+.cat:nth-child(2){background:#FFE5EE}
+.cat:nth-child(3){background:#E0F7F5}
+.cat:nth-child(4){background:#E5FAF1}
+.cat:nth-child(5){background:#EFE9FF}
+
+/* ─── Author + footer ─── */
+.foot{text-align:center;padding:2.5rem 1.5rem;color:var(--ink-faded);font-size:.85rem;position:relative;z-index:2}
+.foot a{color:var(--ink-soft)}
+</style>
+</head>
+<body>
+
+<div class="blob" style="top:-100px;left:-200px;width:500px;height:500px;background:var(--sun)"></div>
+<div class="blob" style="top:-50px;right:-150px;width:400px;height:400px;background:var(--coral)"></div>
+
+<header class="bar">
+  <a href="/" class="brand">
+    <div class="brand-icon">🌈</div>
+    <b>Parent<em>AtEase</em></b>
+  </a>
+  <a href="/" class="back">← Retour</a>
+</header>
+
+<main class="wrap">
+
+  <div class="left">
+    <span class="badge"><span class="dot"></span> Guide gratuit · PDF imprimable</span>
+
+    <h1>
+      50 phrases qui<br/>
+      <span class="marker">apaisent</span> un enfant<br/>
+      en <span class="scribble">pleine crise</span>.
+    </h1>
+
+    <p class="lede">
+      Quoi dire (et quoi <strong>ne pas dire</strong>) quand tout pèse.
+      50 phrases concrètes, classées par situation, avec le <strong>pourquoi
+      scientifique</strong> et le piège à éviter.
+    </p>
+
+    <ul class="checks">
+      <li>5 catégories · <strong>0 à 16 ans</strong> couverts</li>
+      <li>9 sources peer-reviewed (Bowlby, Gottman, Siegel…)</li>
+      <li>Imprimable en PDF · à mettre sur le frigo</li>
+      <li><strong>Zéro pub, zéro spam.</strong> Tu te désabonnes en 1 clic.</li>
+    </ul>
+
+    <div class="trust-row">
+      <div class="face-stack" aria-hidden="true">
+        <span class="face">🩺</span>
+        <span class="face">🧠</span>
+        <span class="face">😴</span>
+        <span class="face">🌿</span>
+      </div>
+      <div class="meta">
+        <span class="stars">★★★★★</span>
+        Écrit avec 10 expert·es de la parentalité
+      </div>
+    </div>
+  </div>
+
+  <aside class="form-card">
+    <h2>📬 Reçois-le maintenant</h2>
+    <p class="sub">Tu reçois le lien dans les 2 minutes par email.</p>
+
+    <form id="lead-form" novalidate>
+      <label for="first_name">Ton prénom <span style="color:var(--ink-faded);font-weight:500">(optionnel)</span></label>
+      <input type="text" id="first_name" name="first_name" autocomplete="given-name" placeholder="Aïcha, Marie, Karim…" maxlength="50" />
+
+      <label for="email">Ton email</label>
+      <input type="email" id="email" name="email" autocomplete="email" placeholder="ton@email.com" required />
+
+      <input type="hidden" name="lang" value="fr" />
+      <input type="hidden" name="source" value="50-phrases" />
+
+      <button type="submit">✨ Envoyer le guide gratuit</button>
+
+      <div class="success" id="lead-success">
+        🎉 C'est dans la boîte ! Vérifie ton email (et les spams au cas où).
+      </div>
+      <div class="error" id="lead-error"></div>
+
+      <p class="privacy">
+        En t'abonnant, tu acceptes notre <a href="/methodology.html#privacy">politique de confidentialité</a>.
+        Données hébergées en Europe. Aucun partage à des tiers.
+      </p>
+    </form>
+  </aside>
+
+</main>
+
+<section class="preview">
+  <h2>Ce qu'il y a <span class="marker">dans le guide</span> :</h2>
+  <p class="sub">5 catégories × 10 phrases · prêtes à utiliser ce soir</p>
+
+  <div class="cats">
+    <div class="cat">
+      <span class="icon">😤</span>
+      <div class="n">Crises de colère</div>
+      <div class="count">10 phrases · 0–3 ans</div>
+    </div>
+    <div class="cat">
+      <span class="icon">👻</span>
+      <div class="n">Peurs &amp; anxiétés</div>
+      <div class="count">10 phrases · 3–7 ans</div>
+    </div>
+    <div class="cat">
+      <span class="icon">👫</span>
+      <div class="n">Frères &amp; sœurs</div>
+      <div class="count">10 phrases · tout âge</div>
+    </div>
+    <div class="cat">
+      <span class="icon">🚪</span>
+      <div class="n">Transitions difficiles</div>
+      <div class="count">10 phrases · bain, lit, école</div>
+    </div>
+    <div class="cat">
+      <span class="icon">🌙</span>
+      <div class="n">Ados</div>
+      <div class="count">10 phrases · 12–16 ans</div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  © ParentAtEase 2026 · <a href="/">parentatease.com</a> · <a href="/methodology.html">Notre méthodologie</a> · <a href="mailto:hello@parentatease.com">Contact</a>
+</footer>
+
+<script>
+const form     = document.getElementById('lead-form');
+const success  = document.getElementById('lead-success');
+const errorBox = document.getElementById('lead-error');
+const button   = form.querySelector('button[type="submit"]');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errorBox.style.display = 'none';
+  button.disabled = true;
+  button.textContent = '✉️ Envoi...';
+
+  const data = Object.fromEntries(new FormData(form));
+
+  try {
+    const res = await fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+
+    if (!res.ok) throw new Error(json.message || json.error || 'Une erreur est survenue.');
+
+    success.style.display = 'block';
+    form.style.display = 'none';
+  } catch (err) {
+    errorBox.textContent = err.message;
+    errorBox.style.display = 'block';
+    button.disabled = false;
+    button.textContent = '✨ Envoyer le guide gratuit';
+  }
+});
+</script>
+
+</body>
+</html>

@@ -130,6 +130,23 @@ function getDb() {
     );
     CREATE INDEX IF NOT EXISTS idx_sub_status   ON subscriptions(status);
     CREATE INDEX IF NOT EXISTS idx_sub_customer ON subscriptions(stripe_customer_id);
+
+    -- ── Leads (email signups via lead magnet) ───────────────────────────────
+    CREATE TABLE IF NOT EXISTS leads (
+      email          TEXT PRIMARY KEY,
+      first_name     TEXT,
+      lang           TEXT NOT NULL DEFAULT 'fr',
+      source         TEXT NOT NULL DEFAULT '50-phrases',  -- which lead magnet
+      consent_at     TEXT NOT NULL DEFAULT (datetime('now')),
+      day0_sent_at   TEXT,                                  -- welcome + PDF link
+      day3_sent_at   TEXT,                                  -- value email
+      day7_sent_at   TEXT,                                  -- soft CTA
+      unsubscribed   INTEGER NOT NULL DEFAULT 0,
+      converted_at   TEXT,                                  -- if they subscribed
+      ip             TEXT,                                  -- for fraud detection
+      user_agent     TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_leads_lang ON leads(lang);
   `);
 
   // ── One-shot data migration : onboarding 8→3 steps (2026-05-10) ─────────────
@@ -222,7 +239,59 @@ function findSubscriptionByCustomerId(customerId) {
     .get(customerId);
 }
 
+// ─── Leads (lead magnet email signups) ────────────────────────────────────
+function upsertLead(lead) {
+  getDb().prepare(`
+    INSERT INTO leads (email, first_name, lang, source, ip, user_agent)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(email) DO UPDATE SET
+      first_name = excluded.first_name,
+      lang       = excluded.lang,
+      unsubscribed = 0
+  `).run(
+    lead.email.toLowerCase().trim(),
+    lead.first_name || null,
+    lead.lang || 'fr',
+    lead.source || '50-phrases',
+    lead.ip || null,
+    lead.user_agent || null
+  );
+}
+
+function findLeadsToSend(stage) {
+  // stage = 'day0' | 'day3' | 'day7'
+  const ageDaysByStage = { day0: 0, day3: 3, day7: 7 };
+  const days = ageDaysByStage[stage];
+  if (days === undefined) return [];
+
+  const sentColumn = `${stage}_sent_at`;
+  const consentCondition = days === 0
+    ? "datetime('now') >= consent_at"
+    : `datetime('now') >= datetime(consent_at, '+${days} days')`;
+
+  return getDb().prepare(`
+    SELECT email, first_name, lang, consent_at
+      FROM leads
+     WHERE unsubscribed = 0
+       AND ${sentColumn} IS NULL
+       AND ${consentCondition}
+     LIMIT 500
+  `).all();
+}
+
+function markLeadSent(email, stage) {
+  const sentColumn = `${stage}_sent_at`;
+  getDb().prepare(`UPDATE leads SET ${sentColumn} = datetime('now') WHERE email = ?`)
+    .run(email.toLowerCase().trim());
+}
+
+function unsubscribeLead(email) {
+  getDb().prepare('UPDATE leads SET unsubscribed = 1 WHERE email = ?')
+    .run(email.toLowerCase().trim());
+}
+
 module.exports = {
   getDb, DB_PATH, logMessage,
   getActiveSubscription, upsertSubscription, findSubscriptionByCustomerId,
+  upsertLead, findLeadsToSend, markLeadSent, unsubscribeLead,
 };

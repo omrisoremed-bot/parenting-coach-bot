@@ -311,6 +311,10 @@ app.use('/api', webappApiRouter);
 const { requireSession } = require('./handlers/webappApi');
 app.use('/api/billing', requireSession, billingRouter);
 
+// ─── Lead magnet (public — no auth, has its own rate limit) ──────────────────
+const leadsRouter = require('./handlers/leadsHandler');
+app.use('/api/leads', leadsRouter);
+
 // ─── Webapp static files (Phase 2) ───────────────────────────────────────────
 const path = require('path');
 app.use('/webapp', express.static(path.join(__dirname, 'webapp')));

@@ -71,6 +71,23 @@ function initCronJobs() {
     }
   }, { timezone: TZ });
   logger.info('Cron: webhook dedup cleanup scheduled (03:00 daily)');
+
+  // ─── Lead magnet email sequence dispatcher (10:00 Casablanca, daily) ───────
+  // Sends day3 + day7 emails to eligible leads.
+  // Skipped silently if RESEND_API_KEY not set.
+  if (process.env.RESEND_API_KEY) {
+    cron.schedule('0 10 * * *', async () => {
+      try {
+        const { dispatchPendingEmails } = require('../handlers/leadsHandler');
+        await dispatchPendingEmails();
+      } catch (err) {
+        logger.error('Cron: leadmagnet dispatch failed', { error: err.message });
+      }
+    }, { timezone: TZ });
+    logger.info('Cron: leadmagnet dispatcher scheduled (10:00 daily, Resend configured)');
+  } else {
+    logger.info('Cron: leadmagnet dispatcher SKIPPED (RESEND_API_KEY not set)');
+  }
 }
 
 module.exports = { initCronJobs };
