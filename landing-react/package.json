@@ -1,0 +1,28 @@
+{
+  "name": "parentatease-landing",
+  "version": "1.1.0",
+  "private": true,
+  "description": "ParentAtEase landing page — React + Vite + Tailwind + Framer Motion. Blog is isolated to a separate deployment.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173",
+    "lint": "echo 'no linter configured'"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
+    "framer-motion": "^11.18.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^3.4.17",
+    "vite": "^5.4.14"
+  }
+}

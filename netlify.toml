@@ -1,0 +1,61 @@
+# Netlify deployment config — ParentAtEase landing
+# (React + Vite + Framer Motion · landing-react/)
+#
+# Replaces the legacy static landing/ folder.
+# The blog will be deployed on a separate Netlify site at blog.parentatease.com
+# (see landing/blog/ for the static HTML articles, still kept as a fallback).
+
+[build]
+  base    = "landing-react"
+  command = "npm install && npm run build"
+  publish = "landing-react/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# ─── Legacy redirects (post ParentEase → ParentAtEase rebrand) ───────────────
+[[redirects]]
+  from   = "/parentease/*"
+  to     = "/:splat"
+  status = 301
+  force  = false
+
+[[redirects]]
+  from   = "/parentflow/*"
+  to     = "/:splat"
+  status = 301
+
+# ─── Blog → external sub-domain ──────────────────────────────────────────────
+# Until blog.parentatease.com is live, this points to the legacy static blog.
+# Once the subdomain DNS is configured, change `to` to "https://blog.parentatease.com/:splat".
+[[redirects]]
+  from   = "/blog"
+  to     = "/blog/index.html"
+  status = 200
+
+[[redirects]]
+  from   = "/blog/*"
+  to     = "/blog/:splat"
+  status = 200
+
+# ─── SPA fallback (smooth scroll anchors stay on /) ──────────────────────────
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+# ─── Security headers ────────────────────────────────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options          = "DENY"
+    X-Content-Type-Options   = "nosniff"
+    Referrer-Policy          = "strict-origin-when-cross-origin"
+    Permissions-Policy       = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+
+# ─── Cache hashed assets aggressively ────────────────────────────────────────
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
