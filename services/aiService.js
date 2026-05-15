@@ -40,14 +40,13 @@ function loadKnowledgeBase() {
 }
 
 /**
- * AI Service — powered by NVIDIA NIM (free tier)
- * API: https://integrate.api.nvidia.com/v1  (OpenAI-compatible)
- * Model: mistralai/mistral-large-2-instruct  (best free model for French + reasoning)
+ * AI Service — chaîne de providers gratuits OpenAI-compatible
  *
- * Switching to another OpenAI-compatible free provider = change 2 env vars:
- *   Groq   → AI_BASE_URL=https://api.groq.com/openai/v1  AI_MODEL=llama-3.3-70b-versatile
- *   OpenRouter → AI_BASE_URL=https://openrouter.ai/api/v1  AI_MODEL=mistralai/mistral-7b-instruct:free
- *   Together → AI_BASE_URL=https://api.together.xyz/v1   AI_MODEL=mistralai/Mixtral-8x7B-Instruct-v0.1
+ * Provider principal : NVIDIA NIM (AI_API_KEY, AI_BASE_URL, AI_MODEL)
+ * Fallbacks auto    : Groq (GROQ_AI_KEY) → OpenRouter (OPENROUTER_API_KEY)
+ *
+ * Si le principal est rate-limited ou hors-service, on bascule au suivant.
+ * Pose simplement les clés de fallback dans Railway — aucun autre changement.
  */
 
 const OpenAI = require('openai');
@@ -62,20 +61,50 @@ const MAX_HISTORY  = 10;  // keep last N turns to avoid token bloat
 const MAX_RETRIES  = 3;
 const RETRY_DELAY  = 1500; // ms base delay (doubles each attempt)
 
-let _client = null;
-
-function getClient() {
-  if (!_client) {
-    _client = new OpenAI({
-      apiKey:  process.env.AI_API_KEY,
-      baseURL: process.env.AI_BASE_URL || DEFAULT_BASE_URL
-    });
-  }
-  return _client;
+// ─── Chaîne de fallback IA ────────────────────────────────────────────────────
+// Si le provider principal (NVIDIA NIM via AI_API_KEY) tombe (quota épuisé,
+// rate limit, panne), on bascule automatiquement vers Groq puis OpenRouter.
+// Il suffit de poser les clés correspondantes dans Railway pour activer chaque
+// fallback. Un provider sans clé est simplement ignoré.
+//
+// Pour ajouter un nouveau fallback : créer un compte, copier la clé, ajouter
+// une entrée ci-dessous. Aucune autre modification nécessaire.
+function buildProviderChain() {
+  const chain = [
+    {
+      name:    'nvidia',
+      key:     process.env.AI_API_KEY,
+      baseURL: process.env.AI_BASE_URL || DEFAULT_BASE_URL,
+      model:   process.env.AI_MODEL    || DEFAULT_MODEL
+    },
+    {
+      name:    'groq',
+      key:     process.env.GROQ_AI_KEY,
+      baseURL: 'https://api.groq.com/openai/v1',
+      model:   'llama-3.3-70b-versatile'
+    },
+    {
+      name:    'openrouter',
+      key:     process.env.OPENROUTER_API_KEY,
+      baseURL: 'https://openrouter.ai/api/v1',
+      model:   'mistralai/mistral-7b-instruct:free'
+    }
+  ];
+  return chain.filter(p => p.key);
 }
 
-function getModel() {
-  return process.env.AI_MODEL || DEFAULT_MODEL;
+// Cache des clients OpenAI par provider (un par baseURL pour éviter de
+// recréer une connexion HTTP à chaque appel)
+const _clientCache = new Map();
+
+function getClientFor(provider) {
+  if (!_clientCache.has(provider.name)) {
+    _clientCache.set(provider.name, new OpenAI({
+      apiKey:  provider.key,
+      baseURL: provider.baseURL
+    }));
+  }
+  return _clientCache.get(provider.name);
 }
 
 /**
@@ -106,8 +135,10 @@ function isRetryable(err) {
  * @returns {Promise<string>}
  */
 async function callAI(systemPrompt, userMessage, history = []) {
-  const client = getClient();
-  const model  = getModel();
+  const providers = buildProviderChain();
+  if (providers.length === 0) {
+    throw new Error('Aucun provider IA configuré — set AI_API_KEY, GROQ_AI_KEY ou OPENROUTER_API_KEY');
+  }
 
   // Trim history to avoid hitting token limits
   const trimmedHistory = history.slice(-MAX_HISTORY);
@@ -118,48 +149,67 @@ async function callAI(systemPrompt, userMessage, history = []) {
     { role: 'user',   content: userMessage }
   ];
 
-  logger.debug('AI call', {
-    provider: process.env.AI_BASE_URL || DEFAULT_BASE_URL,
-    model,
-    historyLen: trimmedHistory.length
-  });
-
   let lastErr;
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const response = await client.chat.completions.create({
-        model,
-        messages,
-        max_tokens:   MAX_TOKENS,
-        temperature:  0.7,
-        top_p:        0.95
-      });
 
-      const text = response.choices[0]?.message?.content || '';
-      logger.debug('AI response', {
-        chars:      text.length,
-        stopReason: response.choices[0]?.finish_reason,
-        attempt
-      });
+  // ── Boucle sur les providers de la chaîne ──────────────────────────────────
+  // Pour chaque provider : MAX_RETRIES tentatives avec backoff exponentiel sur
+  // les erreurs transitoires (429/5xx/timeout). Si toutes échouent, on passe
+  // au provider suivant.
+  for (const provider of providers) {
+    const client = getClientFor(provider);
 
-      return text;
+    logger.debug('AI call', {
+      provider: provider.name,
+      model:    provider.model,
+      historyLen: trimmedHistory.length
+    });
 
-    } catch (err) {
-      lastErr = err;
-      if (isRetryable(err) && attempt < MAX_RETRIES) {
-        const delay = RETRY_DELAY * Math.pow(2, attempt - 1); // 1.5s, 3s, 6s
-        logger.warn(`AI call failed (attempt ${attempt}/${MAX_RETRIES}), retrying in ${delay}ms`, {
-          error: err.message,
-          status: err?.status
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const response = await client.chat.completions.create({
+          model:        provider.model,
+          messages,
+          max_tokens:   MAX_TOKENS,
+          temperature:  0.7,
+          top_p:        0.95
         });
-        await sleep(delay);
-      } else {
-        break;
+
+        const text = response.choices[0]?.message?.content || '';
+        logger.debug('AI response', {
+          provider:   provider.name,
+          chars:      text.length,
+          stopReason: response.choices[0]?.finish_reason,
+          attempt
+        });
+
+        return text;
+
+      } catch (err) {
+        lastErr = err;
+        if (isRetryable(err) && attempt < MAX_RETRIES) {
+          const delay = RETRY_DELAY * Math.pow(2, attempt - 1); // 1.5s, 3s, 6s
+          logger.warn(`AI call retry`, {
+            provider: provider.name,
+            attempt,
+            delayMs: delay,
+            error:   err.message,
+            status:  err?.status
+          });
+          await sleep(delay);
+        } else {
+          // Non-retryable ou dernière tentative → bascule au provider suivant
+          logger.warn(`AI provider exhausted, trying next`, {
+            provider: provider.name,
+            error:    err.message,
+            status:   err?.status
+          });
+          break;
+        }
       }
     }
   }
 
-  logger.error('AI call failed after all retries', { error: lastErr?.message });
+  logger.error('All AI providers failed', { error: lastErr?.message });
   throw lastErr;
 }
 

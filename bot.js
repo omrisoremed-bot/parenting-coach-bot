@@ -77,19 +77,29 @@ function verifyMetaSignature(req) {
 
 /**
  * Vérifie la signature X-Twilio-Signature envoyée par Twilio.
- * Nécessite TWILIO_AUTH_TOKEN + TWILIO_WEBHOOK_URL (URL publique complète).
- * Si TWILIO_WEBHOOK_URL n'est pas configuré, passe en mode permissif (dev only).
+ *
+ * Reconstruit l'URL exacte utilisée par Twilio pour signer la requête, à partir
+ * des headers de proxy (Railway, Render, Heroku injectent x-forwarded-proto et
+ * x-forwarded-host). Cela élimine la fragilité de TWILIO_WEBHOOK_URL : la
+ * vérification reste valide même si le domaine change ou si la console Twilio
+ * est reconfigurée.
+ *
+ * Fallback : si TWILIO_WEBHOOK_URL est explicitement défini, on l'utilise
+ * (utile pour debug/staging).
  */
 function verifyTwilioSignature(req) {
-  if (!process.env.TWILIO_WEBHOOK_URL) {
-    logger.warn('TWILIO_WEBHOOK_URL non configuré — vérification signature Twilio désactivée');
-    return true;
-  }
   const twilio = require('twilio');
+
+  const url = process.env.TWILIO_WEBHOOK_URL || (() => {
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+    const host  = req.headers['x-forwarded-host']  || req.get('host');
+    return `${proto}://${host}${req.originalUrl}`;
+  })();
+
   return twilio.validateRequest(
     process.env.TWILIO_AUTH_TOKEN,
     req.headers['x-twilio-signature'] || '',
-    process.env.TWILIO_WEBHOOK_URL,
+    url,
     req.body
   );
 }
@@ -306,9 +316,46 @@ app.use('/api', webappApiRouter);
 const path = require('path');
 app.use('/webapp', express.static(path.join(__dirname, 'webapp')));
 
-// ─── Health check ────────────────────────────────────────────────────────────
+// ─── Health check enrichi ────────────────────────────────────────────────────
+// Vérifie les composants critiques. UptimeRobot / BetterStack peuvent pinger
+// ce endpoint toutes les 5 min et alerter sur 503.
+//   - db                : la base SQLite répond
+//   - recent_inbound_24h: au moins 1 message user reçu dans les 24 dernières heures
+//                         (signal faible mais utile : détecte un webhook cassé sur
+//                          une instance qui a au moins 1 user actif)
+//   - last_inbound      : timestamp ISO du dernier message reçu (debug)
+//
+// Renvoie 503 si la DB est down — c'est le seul critère "dur".
+// recent_inbound_24h est affiché mais n'influence pas le code HTTP, pour ne pas
+// déclencher des fausses alertes sur un bot peu utilisé.
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', ts: new Date().toISOString() });
+  const checks = {
+    status: 'ok',
+    db: false,
+    recent_inbound_24h: false,
+    last_inbound: null,
+    ts: new Date().toISOString()
+  };
+
+  try {
+    const db = require('./services/database').getDb();
+    db.prepare('SELECT 1').get();
+    checks.db = true;
+
+    const row = db.prepare(
+      `SELECT MAX(created_at) AS t FROM conversation_history WHERE role = 'user'`
+    ).get();
+    if (row?.t) {
+      checks.last_inbound = row.t;
+      const ageMs = Date.now() - new Date(row.t + 'Z').getTime();
+      checks.recent_inbound_24h = ageMs < 24 * 60 * 60 * 1000;
+    }
+  } catch (err) {
+    logger.warn('Health check DB failure', { error: err.message });
+  }
+
+  if (!checks.db) checks.status = 'degraded';
+  res.status(checks.db ? 200 : 503).json(checks);
 });
 
 // ─── Start server + cron jobs ────────────────────────────────────────────────
