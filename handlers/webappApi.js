@@ -22,7 +22,7 @@ const express   = require('express');
 const crypto    = require('crypto');
 const rateLimit = require('express-rate-limit');
 const { getDb, logMessage } = require('../services/database');
-const { loadProfile } = require('./profileLoader');
+const { loadProfile, updateProfile } = require('./profileLoader');
 const { sendMessage } = require('../services/messengerAdapter');
 const { callAI, buildConversationPrompt } = require('../services/aiService');
 const { systemPrompt } = require('../services/promptBuilder');
@@ -295,6 +295,84 @@ router.post('/chat', chatLimiter, requireSession, async (req, res) => {
   } catch (err) {
     logger.error('chat endpoint error', { phone, error: err.message });
     return res.status(502).json({ error: 'ai_unavailable' });
+  }
+});
+
+// ─── POST /api/me/cron-toggle — activer/suspendre les messages auto ──────────
+router.post('/me/cron-toggle', requireSession, (req, res) => {
+  const active = req.body?.active;
+  if (typeof active !== 'boolean') {
+    return res.status(400).json({ error: 'invalid_input', message: 'active doit être un booléen' });
+  }
+
+  const profile = loadProfile(req.session.phone);
+  if (!profile) return res.status(404).json({ error: 'profile_not_found' });
+
+  const updated = updateProfile(req.session.phone, { cron_active: active });
+  logger.info('Cron toggled via app', { phone: req.session.phone, active });
+  return res.json({ cron_active: !!updated.cron_active });
+});
+
+// ─── PATCH /api/me — édition du profil par l'utilisateur (champs whitelistés) ─
+const USER_EDITABLE_FIELDS = [
+  'language', 'parent', 'children', 'challenges',
+  'parenting_style', 'cultural_context'
+];
+
+router.patch('/me', requireSession, (req, res) => {
+  const existing = loadProfile(req.session.phone);
+  if (!existing) return res.status(404).json({ error: 'profile_not_found' });
+
+  const patch = Object.fromEntries(
+    Object.entries(req.body || {}).filter(([k]) => USER_EDITABLE_FIELDS.includes(k))
+  );
+  if (Object.keys(patch).length === 0) {
+    return res.status(400).json({ error: 'no_valid_fields', allowed: USER_EDITABLE_FIELDS });
+  }
+
+  const updated = updateProfile(req.session.phone, patch);
+  logger.info('Profile updated via app', { phone: req.session.phone, fields: Object.keys(patch) });
+
+  return res.json({
+    phone: updated.phone,
+    channel: updated.phone.startsWith('tg:') ? 'telegram' : 'whatsapp',
+    language: updated.language,
+    parent: updated.parent || {},
+    children: updated.children || [],
+    challenges: updated.challenges || [],
+    parenting_style: updated.parenting_style || '',
+    cultural_context: updated.cultural_context || '',
+    cron_active: !!updated.cron_active,
+    onboarding_complete: !!updated.onboarding_complete,
+    created_at: updated.created_at,
+    last_active: updated.last_active,
+    weekly_checkins: updated.weekly_checkins || []
+  });
+});
+
+// ─── POST /api/push/register — enregistre le jeton push Expo de l'appareil ────
+router.post('/push/register', requireSession, (req, res) => {
+  const token    = String(req.body?.token || '').trim();
+  const platform = String(req.body?.platform || 'unknown').trim().slice(0, 20);
+
+  if (!token) {
+    return res.status(400).json({ error: 'invalid_token' });
+  }
+
+  try {
+    getDb().prepare(
+      `INSERT INTO push_tokens (token, phone, platform, created_at, updated_at)
+       VALUES (?, ?, ?, datetime('now'), datetime('now'))
+       ON CONFLICT(token) DO UPDATE SET
+         phone = excluded.phone,
+         platform = excluded.platform,
+         updated_at = datetime('now')`
+    ).run(token, req.session.phone, platform);
+    logger.info('Push token registered', { phone: req.session.phone, platform });
+    return res.json({ ok: true });
+  } catch (err) {
+    logger.error('push register failed', { phone: req.session.phone, error: err.message });
+    return res.status(500).json({ error: 'register_failed' });
   }
 });
 

@@ -77,6 +77,16 @@ function getDb() {
       expires_at  TEXT    NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_sessions_phone ON sessions(phone);
+
+    -- ── Push notifications (jetons Expo de l'app mobile) ────────────────────
+    CREATE TABLE IF NOT EXISTS push_tokens (
+      token       TEXT    PRIMARY KEY,
+      phone       TEXT    NOT NULL REFERENCES users(phone) ON DELETE CASCADE,
+      platform    TEXT    NOT NULL DEFAULT 'unknown',
+      created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+      updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_push_phone ON push_tokens(phone);
   `);
 
   logger.info('SQLite database ready', { path: DB_PATH });
