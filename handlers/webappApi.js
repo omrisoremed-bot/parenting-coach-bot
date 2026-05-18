@@ -18,11 +18,14 @@
  * Le bot envoie l'OTP via le canal correspondant grâce à `messengerAdapter`.
  */
 
-const express = require('express');
-const crypto  = require('crypto');
-const { getDb } = require('../services/database');
+const express   = require('express');
+const crypto    = require('crypto');
+const rateLimit = require('express-rate-limit');
+const { getDb, logMessage } = require('../services/database');
 const { loadProfile } = require('./profileLoader');
 const { sendMessage } = require('../services/messengerAdapter');
+const { callAI, buildConversationPrompt } = require('../services/aiService');
+const { systemPrompt } = require('../services/promptBuilder');
 const logger = require('../services/logger');
 
 const router = express.Router();
@@ -31,6 +34,17 @@ router.use(express.json());
 const OTP_TTL_MS      = 5 * 60 * 1000;         // 5 min
 const SESSION_TTL_MS  = 7 * 24 * 60 * 60 * 1000; // 7 jours
 const OTP_RATE_LIMIT_MS = 30 * 1000;           // 1 OTP toutes les 30s max
+const CHAT_HISTORY_TURNS = 6;                  // tours injectés dans le contexte IA
+const CHAT_MAX_CHARS     = 2000;               // limite anti-abus sur un message
+
+// ─── Rate limit chat — 30 messages / 5 min par IP (protège le quota IA) ──────
+const chatLimiter = rateLimit({
+  windowMs:        5 * 60 * 1000,
+  max:             30,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message:         { error: 'rate_limited', retry_after_minutes: 5 }
+});
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function generateOTP() {
@@ -230,6 +244,58 @@ router.get('/history', requireSession, (req, res) => {
     )
     .all(req.session.phone, limit);
   return res.json({ messages: rows.reverse() });
+});
+
+// ─── POST /api/chat — conversation libre avec le coach IA ────────────────────
+// Réplique la logique free-form du bot (handlers/messageHandler.js) mais
+// retourne la réponse au lieu de l'envoyer via WhatsApp/Telegram. Les messages
+// sont tracés dans conversation_history → visibles aussi via GET /api/history
+// et partagés avec le canal bot (historique unifié multi-canal).
+router.post('/chat', chatLimiter, requireSession, async (req, res) => {
+  const text = String(req.body?.text || '').trim();
+
+  if (!text) {
+    return res.status(400).json({ error: 'empty_message' });
+  }
+  if (text.length > CHAT_MAX_CHARS) {
+    return res.status(400).json({ error: 'message_too_long', max_chars: CHAT_MAX_CHARS });
+  }
+
+  const phone   = req.session.phone;
+  const profile = loadProfile(phone);
+  if (!profile) {
+    return res.status(404).json({ error: 'profile_not_found' });
+  }
+
+  try {
+    logMessage(phone, 'user', text);
+
+    // Contexte : derniers échanges (user + assistant)
+    let history = [];
+    try {
+      const rows = getDb()
+        .prepare(
+          `SELECT role, content FROM conversation_history
+           WHERE phone = ? ORDER BY created_at DESC LIMIT ?`
+        )
+        .all(phone, CHAT_HISTORY_TURNS * 2)
+        .reverse();
+      history = rows.map(r => ({ role: r.role, content: r.content }));
+    } catch (histErr) {
+      logger.warn('chat history fetch failed — responding without context', {
+        phone, error: histErr.message
+      });
+    }
+
+    const prompt = buildConversationPrompt(profile, text);
+    const reply  = await callAI(systemPrompt, prompt, history);
+    logMessage(phone, 'assistant', reply);
+
+    return res.json({ reply });
+  } catch (err) {
+    logger.error('chat endpoint error', { phone, error: err.message });
+    return res.status(502).json({ error: 'ai_unavailable' });
+  }
 });
 
 module.exports = router;
