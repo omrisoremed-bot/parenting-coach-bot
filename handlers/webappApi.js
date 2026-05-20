@@ -391,6 +391,71 @@ Langue : ${profile.language || 'fr'}.
   }
 });
 
+// ─── POST /api/journal-insights — lecture des tendances du journal familial ─
+// Reçoit UNIQUEMENT des stats agrégées (moyennes, tendances, fréquences),
+// JAMAIS les notes brutes — la confidentialité des entrées du journal reste
+// stricte côté appareil. L'IA produit des observations + 2-3 pistes d'action.
+router.post('/journal-insights', chatLimiter, requireSession, (req, res, next) => {
+  try {
+    const stats = req.body || {};
+    if (typeof stats !== 'object' || stats === null) {
+      return res.status(400).json({ error: 'invalid_input' });
+    }
+    if (!Number.isFinite(stats.entries_count) || stats.entries_count < 2) {
+      return res.status(400).json({ error: 'not_enough_data', min_entries: 2 });
+    }
+
+    const phone   = req.session.phone;
+    const profile = loadProfile(phone);
+    if (!profile) return res.status(404).json({ error: 'profile_not_found' });
+
+    const safeStats = {
+      days:                 stats.days,
+      entries_count:        stats.entries_count,
+      avg_child_mood:       stats.avg_child_mood,
+      avg_parent_mood:      stats.avg_parent_mood,
+      avg_sleep:            stats.avg_sleep,
+      child_mood_trend:     stats.child_mood_trend,
+      parent_mood_trend:    stats.parent_mood_trend,
+      sleep_trend:          stats.sleep_trend,
+      most_frequent_events: Array.isArray(stats.most_frequent_events) ? stats.most_frequent_events.slice(0, 8) : [],
+      best_day:             stats.best_day  ?? null,
+      worst_day:            stats.worst_day ?? null
+    };
+
+    const prompt = `
+Parent : ${narrateProfile(profile)}
+
+Voici les statistiques anonymisées de son journal familial sur ${safeStats.days} jours
+(${safeStats.entries_count} entrées remplies, échelle 1-5 sauf indication) :
+
+${JSON.stringify(safeStats, null, 2)}
+
+Produis une lecture chaleureuse et utile :
+1. Une phrase d'ouverture nominative qui salue l'effort de tenir un journal.
+2. 2 à 3 observations factuelles tirées des chiffres (corrélations, tendances,
+   bons jours, jours plus durs). Ne dramatise jamais — c'est de la donnée, pas
+   un diagnostic.
+3. 2 ou 3 pistes concrètes pour la semaine à venir, formulées en propositions
+   douces (pas en injonctions).
+
+Pas de jargon (« pattern », « score », « algorithm »). Parle comme un coach humain.
+Max 200 mots. Astérisques *gras* WhatsApp uniquement.
+N'oublie pas le bloc <reflection>...</reflection> avant le message visible.
+Langue : ${profile.language || 'fr'}.
+    `.trim();
+
+    callAI(systemPrompt, prompt)
+      .then(insights => res.json({ insights }))
+      .catch(err => {
+        logger.error('journal-insights error', { phone, error: err.message });
+        res.status(502).json({ error: 'ai_unavailable' });
+      });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ─── POST /api/scenario-guidance — adapte un scénario au profil du parent ───
 // Reçoit le titre + la base générique d'un scénario, retourne une version
 // personnalisée pour l'enfant spécifique (âge, tempérament, besoins, culture).
