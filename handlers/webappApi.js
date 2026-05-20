@@ -391,6 +391,51 @@ Langue : ${profile.language || 'fr'}.
   }
 });
 
+// ─── POST /api/scenario-guidance — adapte un scénario au profil du parent ───
+// Reçoit le titre + la base générique d'un scénario, retourne une version
+// personnalisée pour l'enfant spécifique (âge, tempérament, besoins, culture).
+router.post('/scenario-guidance', chatLimiter, requireSession, async (req, res) => {
+  const title = String(req.body?.title || '').trim();
+  const base  = String(req.body?.base  || '').trim();
+
+  if (!title) return res.status(400).json({ error: 'missing_title' });
+  if (title.length > 200 || base.length > 4000) {
+    return res.status(400).json({ error: 'too_long' });
+  }
+
+  const phone   = req.session.phone;
+  const profile = loadProfile(phone);
+  if (!profile) return res.status(404).json({ error: 'profile_not_found' });
+
+  const prompt = `
+Parent : ${narrateProfile(profile)}
+
+Scénario : ${title}
+
+Base générique (référence) :
+${base}
+
+Réécris cette guidance en l'adaptant spécifiquement à CE parent et à son
+enfant : utilise le prénom de l'enfant, l'âge exact, son tempérament, ses
+besoins spéciaux, les défis déclarés et le contexte culturel/religieux.
+Reproduis le ton des exemples de SOUL.md.
+
+Format : une phrase d'ouverture nominative qui reconnaît la situation, puis
+3 à 5 conseils en puces courtes adaptés au profil. Max 220 mots.
+Astérisques *gras* WhatsApp uniquement, pas de markdown complexe.
+N'oublie pas le bloc <reflection>...</reflection> avant le message visible.
+Langue : ${profile.language || 'fr'}.
+  `.trim();
+
+  try {
+    const guidance = await callAI(systemPrompt, prompt);
+    return res.json({ guidance });
+  } catch (err) {
+    logger.error('scenario-guidance error', { phone, error: err.message });
+    return res.status(502).json({ error: 'ai_unavailable' });
+  }
+});
+
 // ─── POST /api/me/cron-toggle — activer/suspendre les messages auto ──────────
 router.post('/me/cron-toggle', requireSession, (req, res) => {
   const active = req.body?.active;
