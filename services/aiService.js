@@ -178,9 +178,11 @@ async function callAI(systemPrompt, userMessage, history = []) {
           top_p:        0.95
         });
 
-        const text = response.choices[0]?.message?.content || '';
+        const raw = response.choices[0]?.message?.content || '';
+        const text = stripReflection(raw);
         logger.debug('AI response', {
           provider:   provider.name,
+          rawChars:   raw.length,
           chars:      text.length,
           stopReason: response.choices[0]?.finish_reason,
           attempt
@@ -217,70 +219,118 @@ async function callAI(systemPrompt, userMessage, history = []) {
   throw lastErr;
 }
 
+// ─── Helpers : narration profil + stripping de la réflexion ─────────────────
+
+/**
+ * Transforme le profil structuré en 1 paragraphe narratif que le LLM
+ * "lit" beaucoup mieux qu'un blob JSON. Le JSON pousse le modèle à un
+ * ton de rapport ; la prose porte le ton qu'on veut transposer.
+ */
+function narrateProfile(user) {
+  if (!user) return 'profil inconnu';
+  const parts = [];
+  const name = user.parent?.name || 'le parent';
+
+  const familyMap = {
+    'married':        ', en couple',
+    'single-parent':  ', parent solo',
+    'co-parenting':   ', en coparentalité',
+    'blended-family': ', en famille recomposée'
+  };
+  parts.push(name + (familyMap[user.parent?.family_structure] || ''));
+
+  const kids = (user.children || []).map(c => {
+    const m = c.age_months || 0;
+    const y = Math.floor(m / 12);
+    const r = m % 12;
+    const ageStr = y > 0
+      ? (r > 0 ? `${y} ans et ${r} mois` : `${y} ans`)
+      : `${m} mois`;
+    const bits = [`${c.name || "l'enfant"} (${ageStr})`];
+    if (c.personality && c.personality.trim()) bits.push(`tempérament ${c.personality}`);
+    const sn = (c.special_needs || '').toLowerCase();
+    if (sn && sn !== 'none' && sn !== 'aucun' && sn !== 'no') bits.push(c.special_needs);
+    return bits.join(', ');
+  });
+  if (kids.length) parts.push((kids.length > 1 ? 'enfants' : 'enfant') + ' : ' + kids.join(' et '));
+
+  const ch = (user.challenges || []).filter(Boolean);
+  if (ch.length) parts.push('défis actuels : ' + ch.join(', '));
+  if (user.parenting_style)  parts.push('style parental : ' + user.parenting_style);
+  if (user.cultural_context) parts.push('contexte : ' + user.cultural_context);
+
+  return parts.join('. ') + '.';
+}
+
+/**
+ * Retire le bloc <reflection>...</reflection> de la réponse IA.
+ * Le modèle est invité à raisonner dans ce bloc avant de produire le
+ * message visible (pattern Chain-of-Thought empathique). On le strip
+ * côté serveur pour que le parent ne le voie jamais.
+ */
+function stripReflection(text) {
+  if (!text) return '';
+  return text
+    .replace(/<reflection>[\s\S]*?<\/reflection>\s*/gi, '')
+    .trim();
+}
+
 // ─── Prompt builders ──────────────────────────────────────────────────────────
 
 /**
  * Morning plan (08:00 cron).
  */
 function buildMorningPrompt(user) {
-  const religion = user.cultural_context || '';
-  const religionLine = religion ? `\nContexte culturel/religieux : "${religion}" → respecte ces valeurs.` : '';
+  const profile = narrateProfile(user);
+  const locale = (user.language || 'fr') === 'fr' ? 'fr-FR' : 'en-US';
+  const today = new Date().toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' });
   return `
-PROFIL : ${JSON.stringify({ parent: user.parent, children: user.children, challenges: user.challenges, family_structure: user.family_structure, child_personality: user.child_personality, child_special_needs: user.child_special_needs }, null, 2)}${religionLine}
+Parent : ${profile}
+Date : ${today}
 
-Génère le plan parental du matin selon le format exact de SOUL.md.
-Adapte l'activité et l'astuce à l'âge exact de l'enfant et aux défis déclarés.
-Max 160 mots. Langue : ${user.language || 'fr'}.
-Utilise *texte* pour le gras WhatsApp. Pas de ## ou #.
+Génère le plan du matin selon le format exact de SOUL.md — UN MOT POUR TOI en tête, puis les 4 champs.
+Le champ UN MOT POUR TOI doit être nominatif (utilise son prénom) et personnel. Jamais générique.
+Adapte l'activité et l'astuce à l'âge exact, au tempérament et aux défis déclarés.
+Reproduis l'énergie de l'Exemple 1 de SOUL.md (pas les mots exacts).
+N'oublie pas le bloc <reflection>...</reflection> avant le message visible.
+Langue : ${user.language || 'fr'}. Max 160 mots visible. Astérisques *gras* WhatsApp uniquement.
   `.trim();
 }
 
 /**
  * Evening check-in (21:00 cron).
- * Envoie uniquement les champs utiles au modèle — pas de weekly_checkins,
- * session_state ni autres champs internes (minimisation des données).
  */
 function buildEveningPrompt(user) {
-  const safe = {
-    parent:           user.parent           || {},
-    children:         user.children         || [],
-    challenges:       user.challenges       || [],
-    parenting_style:  user.parenting_style  || '',
-    cultural_context: user.cultural_context || '',
-    language:         user.language         || 'fr'
-  };
+  const profile = narrateProfile(user);
   return `
-Profil parent : ${JSON.stringify(safe, null, 2)}
+Parent : ${profile}
 
-Génère le message de bilan du soir selon le format dans SOUL.md.
-Sois chaleureux, bref. Max 80 mots. Langue : ${safe.language}.
-Termine avec les 4 questions numérotées du format.
+Génère le bilan du soir selon le format SOUL.md : une phrase d'ouverture chaude qui
+nomme le prénom du parent et celui de l'enfant, puis les 4 questions numérotées.
+La phrase d'ouverture ne doit JAMAIS être générique — elle reprend le contexte.
+Reproduis l'énergie de l'Exemple 2 de SOUL.md.
+N'oublie pas le bloc <reflection>...</reflection> avant le message visible.
+Langue : ${user.language || 'fr'}. Max 80 mots visible.
   `.trim();
 }
 
 /**
  * Weekly review (Sunday 19:00 cron).
- * Inclut les 3 derniers bilans pour personnaliser la semaine suivante,
- * sans exposer l'historique complet au provider externe.
  */
 function buildWeeklyPrompt(user) {
-  const recentCheckins = (user.weekly_checkins || []).slice(-3);
-  const safe = {
-    parent:           user.parent           || {},
-    children:         user.children         || [],
-    challenges:       user.challenges       || [],
-    parenting_style:  user.parenting_style  || '',
-    cultural_context: user.cultural_context || '',
-    language:         user.language         || 'fr',
-    recent_checkins:  recentCheckins
-  };
+  const profile = narrateProfile(user);
+  const recent = (user.weekly_checkins || []).slice(-3);
+  const recentNarr = recent.length
+    ? '\nDerniers bilans du soir : ' + recent.map(c => `${(c.date || '').slice(0, 10)} « ${c.response} »`).join(' · ')
+    : '';
   return `
-Profil parent : ${JSON.stringify(safe, null, 2)}
+Parent : ${profile}${recentNarr}
 
-Génère le bilan hebdomadaire selon le format dans SOUL.md.
-Inclus 2-3 axes de focus pour la semaine à venir basés sur les défis déclarés
-et les bilans récents si disponibles.
-Max 200 mots. Langue : ${safe.language}.
+Génère le bilan hebdomadaire selon le format SOUL.md.
+Phrase d'ouverture qui célèbre la persévérance du parent (nominative, spécifique).
+Inclus 2-3 axes pour la semaine à venir, formulés en propositions douces, pas en injonctions.
+N'oublie pas le bloc <reflection>...</reflection> avant le message visible.
+Langue : ${user.language || 'fr'}. Max 200 mots visible.
   `.trim();
 }
 
@@ -288,29 +338,18 @@ Max 200 mots. Langue : ${safe.language}.
  * Free-form parent conversation.
  */
 function buildConversationPrompt(user, parentMessage) {
-  const religion = user.cultural_context || user.culturalContext || '';
-  const religionLine = religion
-    ? `\nCONTEXTE RELIGIEUX/CULTUREL : "${religion}" → Respecte ABSOLUMENT ces valeurs dans chaque conseil.`
-    : '';
-
+  const profile = narrateProfile(user);
   return `
-PROFIL PARENT :
-- Prénom : ${user.parent?.name || 'inconnu'}
-- Enfant : ${(user.children || []).map(c => `${c.name || '?'}, ${c.age || '?'}`).join(', ') || 'non renseigné'}
-- Défis : ${(user.challenges || []).join(', ') || 'non renseignés'}
-- Structure familiale : ${user.family_structure || 'non renseignée'}
-- Personnalité enfant : ${user.child_personality || 'non renseignée'}
-- Besoins spéciaux : ${user.child_special_needs || 'aucun'}${religionLine}
+Parent : ${profile}
 
-MESSAGE DU PARENT : "${parentMessage}"
+Message reçu : « ${parentMessage} »
 
-INSTRUCTIONS DE RÉPONSE :
-1. Commence TOUJOURS par reformuler la problématique en 1 phrase : "Je comprends que [reformulation courte]..."
-2. Reconnais l'émotion si présente (1 phrase max)
-3. Donne 2-3 conseils pratiques concrets adaptés au profil
-4. Termine par une phrase d'encouragement courte
-
-Règles : Max 160 mots. Langue : ${user.language || 'fr'}. Pas de #/## ni markdown complexe.
+Réponds selon le ton et les exemples de SOUL.md — surtout l'Exemple 3.
+Commence par nommer ce que le parent vit (1 phrase, nominative).
+Reconnais l'émotion. Donne 3 conseils maximum, concrets et adaptés au profil.
+Termine par une question ouverte (pas une question fermée).
+N'oublie pas le bloc <reflection>...</reflection> avant le message visible.
+Langue : ${user.language || 'fr'}. Max 160 mots visible. Pas de markdown complexe.
   `.trim();
 }
 
