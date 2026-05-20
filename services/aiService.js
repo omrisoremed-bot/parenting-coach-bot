@@ -356,6 +356,8 @@ Langue : ${user.language || 'fr'}. Max 160 mots visible. Pas de markdown complex
 module.exports = {
   callAI,
   loadKnowledgeBase,
+  narrateProfile,
+  stripReflection,
   buildMorningPrompt,
   buildEveningPrompt,
   buildWeeklyPrompt,

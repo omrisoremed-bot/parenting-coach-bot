@@ -24,8 +24,39 @@ const rateLimit = require('express-rate-limit');
 const { getDb, logMessage } = require('../services/database');
 const { loadProfile, updateProfile } = require('./profileLoader');
 const { sendMessage } = require('../services/messengerAdapter');
-const { callAI, buildConversationPrompt } = require('../services/aiService');
+const { callAI, buildConversationPrompt, narrateProfile } = require('../services/aiService');
 const { systemPrompt } = require('../services/promptBuilder');
+
+// 5 styles de réponse exposés par /api/response-variants. Modifiable en un seul
+// endroit — le frontend les consomme via la réponse (ne fait pas d'hypothèse
+// sur la liste). Si tu veux ajouter "ferme-doux", ajoute juste une ligne.
+const RESPONSE_STYLES = [
+  { slug: 'calme',      label: 'Calme',       description: 'Accueille l\'émotion, voix douce, valide avant tout. Pas de leçon.' },
+  { slug: 'ferme',      label: 'Ferme',       description: 'Limite claire, voix posée, sans crier ni menacer. Une seule consigne.' },
+  { slug: 'montessori', label: 'Montessori',  description: 'Autonomie, choix limité, respect de la dignité de l\'enfant.' },
+  { slug: 'psy',        label: 'Psychologue', description: 'Nomme l\'émotion, reconnaît le besoin sous-jacent, reconnecte.' },
+  { slug: 'public',     label: 'En public',   description: 'Brève, neutre, garde la face de l\'enfant. Pas de spectacle.' }
+];
+
+/**
+ * Parse les variantes depuis la sortie LLM. Robuste aux fences markdown,
+ * au texte avant/après le JSON, et au reflection block qui aurait échappé
+ * au strip. Retourne un tableau aligné sur RESPONSE_STYLES — entrées
+ * manquantes = chaîne vide (le client affiche un fallback).
+ */
+function parseVariantsResponse(reply, styles) {
+  if (!reply) return styles.map(s => ({ ...s, text: '' }));
+  const cleaned = reply.replace(/```(?:json)?/gi, '').trim();
+  const match = cleaned.match(/\{[\s\S]*\}/);
+  const jsonStr = match ? match[0] : cleaned;
+  let obj = null;
+  try { obj = JSON.parse(jsonStr); } catch { obj = null; }
+  return styles.map(s => ({
+    style: s.slug,
+    label: s.label,
+    text:  (obj && typeof obj[s.slug] === 'string' ? obj[s.slug] : '').trim()
+  }));
+}
 const logger = require('../services/logger');
 
 const router = express.Router();
@@ -294,6 +325,68 @@ router.post('/chat', chatLimiter, requireSession, async (req, res) => {
     return res.json({ reply });
   } catch (err) {
     logger.error('chat endpoint error', { phone, error: err.message });
+    return res.status(502).json({ error: 'ai_unavailable' });
+  }
+});
+
+// ─── POST /api/response-variants — 5 façons de répondre à une situation ─────
+// Reçoit une situation libre, retourne 5 réponses dans 5 styles distincts.
+// 1 appel IA, parsing JSON robuste, fallback texte vide si parsing échoue.
+router.post('/response-variants', chatLimiter, requireSession, async (req, res) => {
+  const situation = String(req.body?.situation || '').trim();
+  if (!situation) {
+    return res.status(400).json({ error: 'empty_situation' });
+  }
+  if (situation.length > 1000) {
+    return res.status(400).json({ error: 'situation_too_long', max_chars: 1000 });
+  }
+
+  const phone   = req.session.phone;
+  const profile = loadProfile(phone);
+  if (!profile) return res.status(404).json({ error: 'profile_not_found' });
+
+  const profileNarr = narrateProfile(profile);
+  const stylesBlock = RESPONSE_STYLES
+    .map(s => `- "${s.slug}" → ${s.description}`)
+    .join('\n');
+
+  const prompt = `
+Parent : ${profileNarr}
+
+Situation rapportée par le parent : « ${situation} »
+
+Génère 5 versions différentes de ce que le parent peut DIRE À SON ENFANT dans
+cette situation, chacune dans un style distinct. Sois bref : 1 à 2 phrases
+par variante, max 220 caractères. Utilise le prénom de l'enfant. Évite tout
+discours sur le parent (« je suis là pour toi » non, parle À l'enfant).
+
+Styles à produire (clés JSON) :
+${stylesBlock}
+
+Réponds UNIQUEMENT par un objet JSON strict, sans aucun texte hors du JSON,
+sans bloc <reflection>, sans commentaires :
+{
+  "calme":      "...",
+  "ferme":      "...",
+  "montessori": "...",
+  "psy":        "...",
+  "public":     "..."
+}
+Langue : ${profile.language || 'fr'}.
+  `.trim();
+
+  try {
+    const reply    = await callAI(systemPrompt, prompt);
+    const variants = parseVariantsResponse(reply, RESPONSE_STYLES);
+    const filled   = variants.filter(v => v.text).length;
+    if (filled === 0) {
+      logger.warn('variants parse yielded zero filled entries', { phone, replyHead: reply.slice(0, 200) });
+      return res.status(502).json({ error: 'parse_failed' });
+    }
+    logger.info('variants generated', { phone, filled });
+    return res.json({ variants });
+  } catch (err) {
+    logger.error('variants endpoint error', { phone, error: err.message });
     return res.status(502).json({ error: 'ai_unavailable' });
   }
 });
