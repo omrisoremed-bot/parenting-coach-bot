@@ -25,6 +25,7 @@ const { getDb, logMessage } = require('../services/database');
 const { loadProfile, updateProfile } = require('./profileLoader');
 const { sendMessage } = require('../services/messengerAdapter');
 const { callAI, buildConversationPrompt, narrateProfile } = require('../services/aiService');
+const { transcribeBuffer } = require('../services/transcriptionService');
 const { systemPrompt } = require('../services/promptBuilder');
 
 // 5 styles de réponse exposés par /api/response-variants. Modifiable en un seul
@@ -388,6 +389,46 @@ Langue : ${profile.language || 'fr'}.
   } catch (err) {
     logger.error('variants endpoint error', { phone, error: err.message });
     return res.status(502).json({ error: 'ai_unavailable' });
+  }
+});
+
+// ─── POST /api/transcribe — note vocale enregistrée dans l'app → texte ──────
+// Audio enregistré côté mobile (expo-av), uploadé en base64 (limite 10 Mo).
+// Whisper (Groq) renvoie la transcription dans la langue du profil.
+const transcribeJsonParser = express.json({ limit: '10mb' });
+
+router.post('/transcribe', transcribeJsonParser, chatLimiter, requireSession, async (req, res) => {
+  const base64 = String(req.body?.audio || '').trim();
+  const mime   = String(req.body?.mime  || 'audio/m4a').trim();
+
+  if (!base64) return res.status(400).json({ error: 'missing_audio' });
+  // base64 length is ~1.33× raw bytes — cap at ~7.5MB raw -> 10MB base64
+  if (base64.length > 10 * 1024 * 1024) {
+    return res.status(413).json({ error: 'audio_too_large' });
+  }
+
+  const phone   = req.session.phone;
+  const profile = loadProfile(phone);
+  if (!profile) return res.status(404).json({ error: 'profile_not_found' });
+
+  let buffer;
+  try {
+    buffer = Buffer.from(base64, 'base64');
+    if (buffer.length < 100) return res.status(400).json({ error: 'audio_empty' });
+  } catch {
+    return res.status(400).json({ error: 'invalid_base64' });
+  }
+
+  try {
+    const text = await transcribeBuffer(buffer, mime, profile.language || 'fr');
+    if (!text) {
+      return res.status(502).json({ error: 'empty_transcription' });
+    }
+    return res.json({ text });
+  } catch (err) {
+    logger.error('transcribe endpoint error', { phone, error: err.message });
+    const code = err.message?.includes('GROQ_API_KEY') ? 'transcription_disabled' : 'transcribe_failed';
+    return res.status(502).json({ error: code });
   }
 });
 

@@ -109,4 +109,59 @@ function downloadFile(url, destPath) {
   });
 }
 
-module.exports = { transcribeAudio };
+/**
+ * Transcrit un Buffer audio (déjà téléchargé/uploadé) via Groq Whisper.
+ * Utilisé par /api/transcribe pour l'audio enregistré dans l'app mobile.
+ *
+ * @param {Buffer} buffer    — bytes du fichier audio
+ * @param {string} mimeType  — ex. "audio/m4a", "audio/webm", "audio/ogg"
+ * @param {string} userLang  — code langue ('fr', 'ar', 'darija', 'en')
+ * @returns {Promise<string>}
+ */
+async function transcribeBuffer(buffer, mimeType = 'audio/m4a', userLang = 'fr') {
+  const groqKey = process.env.GROQ_API_KEY;
+  if (!groqKey) {
+    throw new Error('GROQ_API_KEY non configuré — transcription audio désactivée');
+  }
+
+  // Devine l'extension pour le filename multipart (Whisper s'en sert)
+  const extMap = {
+    'audio/m4a':  'm4a',
+    'audio/mp4':  'm4a',
+    'audio/mpeg': 'mp3',
+    'audio/mp3':  'mp3',
+    'audio/wav':  'wav',
+    'audio/ogg':  'ogg',
+    'audio/webm': 'webm',
+    'audio/amr':  'amr'
+  };
+  const ext = extMap[mimeType.toLowerCase()] || 'm4a';
+
+  const form = new FormData();
+  form.append('file', buffer, {
+    filename:    `audio.${ext}`,
+    contentType: mimeType
+  });
+  form.append('model', 'whisper-large-v3-turbo');
+  form.append('response_format', 'text');
+  form.append('language', LANG_HINTS[userLang] || 'fr');
+
+  const response = await axios.post(GROQ_API_URL, form, {
+    headers: {
+      ...form.getHeaders(),
+      'Authorization': `Bearer ${groqKey}`
+    },
+    timeout: 30000,
+    maxContentLength: 10 * 1024 * 1024,
+    maxBodyLength:    10 * 1024 * 1024
+  });
+
+  const transcription = typeof response.data === 'string'
+    ? response.data.trim()
+    : response.data?.text?.trim() || '';
+
+  logger.info('Audio buffer transcribed', { bytes: buffer.length, chars: transcription.length, lang: userLang });
+  return transcription;
+}
+
+module.exports = { transcribeAudio, transcribeBuffer };
