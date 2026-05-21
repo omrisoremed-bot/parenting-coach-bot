@@ -1,24 +1,25 @@
 'use strict';
 
 /**
- * promptBuilder.js — Singleton du system prompt global
+ * promptBuilder.js — Singleton du system prompt conversationnel
  *
- * Charge SOUL.md + la base de connaissances (MD + PDF cache) une seule fois
- * au démarrage du process. Node.js met ce module en cache — tous les modules
- * qui le requirent partagent la même instance en mémoire.
+ * Le system prompt du coach = UNIQUEMENT SOUL.md.
  *
- * AVANT : SOUL.md + loadKnowledgeBase() lus 4x indépendamment
- *   (messageHandler, morningPlan, eveningCheckin, weeklyReview)
- * APRÈS : 1 seul require → 0 I/O disque supplémentaire
+ * La base de connaissances (~20K caractères d'articles) n'est PLUS injectée
+ * ici : noyée dans le prompt, elle poussait le modèle vers un ton explicatif
+ * et générique (le coach « récitait » des articles au lieu de parler). SOUL.md
+ * porte déjà la voix, la méthodologie et les protocoles — c'est ce qui doit
+ * dominer à 100%. La base reste disponible pour les scripts de génération
+ * d'articles via `loadKnowledgeBase()` dans aiService.
+ *
+ * Bonus : prompt 3,5× plus court → largement sous les limites de débit des
+ * fournisseurs IA gratuits (fini les échecs en cascade).
  */
 
 const fs   = require('fs');
 const path = require('path');
-const { loadKnowledgeBase } = require('./aiService');
 
 const soulPath = path.join(__dirname, '..', 'agents', 'SOUL.md');
-const soul     = fs.readFileSync(soulPath, 'utf8');
-
-const systemPrompt = soul + loadKnowledgeBase();
+const systemPrompt = fs.readFileSync(soulPath, 'utf8');
 
 module.exports = { systemPrompt };
